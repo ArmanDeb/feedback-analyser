@@ -7,10 +7,10 @@ Créez ou mettez à jour votre fichier `.env` à la racine du projet avec ces va
 ### 1.1 Database URL (Neon) ✅
 
 ```env
-DATABASE_URL="postgresql://neondb_owner:npg_g6WstRw8uDOk@ep-frosty-shape-aglhllx1-pooler.c-2.eu-central-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+DATABASE_URL="postgresql://username:password@your-endpoint.region.aws.neon.tech/neondb?sslmode=require"
 ```
 
-**⚠️ Important:** Cette URL contient le mot de passe de votre base de données. Ne la commitez JAMAIS dans Git !
+**⚠️ Important:** Récupérez cette URL depuis votre dashboard Neon. Ne la commitez JAMAIS dans Git !
 
 ### 1.2 Stack Auth (Neon Auth) 🔐
 
@@ -22,9 +22,9 @@ Pour obtenir vos clés Stack Auth depuis Neon :
 4. Copiez les clés suivantes :
 
 ```env
-NEXT_PUBLIC_STACK_PROJECT_ID="votre-project-id"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="votre-publishable-key"
-STACK_SECRET_SERVER_KEY="votre-secret-key"
+NEXT_PUBLIC_STACK_PROJECT_ID="your_project_id_here"
+NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="your_publishable_key_here"
+STACK_SECRET_SERVER_KEY="your_secret_key_here"
 ```
 
 ### 1.3 OpenRouter (À faire dans l'Épopée S2)

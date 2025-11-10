@@ -6,7 +6,15 @@ node_modules
 .env
 .env.*
 !.env.example
+!.env.template
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .netlify
 
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Logs
+*.log
+npm-debug.log*

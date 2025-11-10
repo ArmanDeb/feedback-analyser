@@ -65,16 +65,16 @@
 Mettez à jour votre fichier `.env` avec ces valeurs :
 
 ```env
-# Database URL (Neon)
-DATABASE_URL="postgresql://neondb_owner:npg_g6WstRw8uDOk@ep-frosty-shape-aglhllx1-pooler.c-2.eu-central-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
+# Database URL (Neon) - Récupérer depuis le dashboard Neon
+DATABASE_URL="postgresql://username:password@your-endpoint.region.aws.neon.tech/neondb?sslmode=require"
 
-# Stack Auth (à récupérer depuis le dashboard Neon Auth)
-NEXT_PUBLIC_STACK_PROJECT_ID="votre-project-id"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="votre-publishable-key"
-STACK_SECRET_SERVER_KEY="votre-secret-key"
+# Stack Auth - Récupérer depuis le dashboard Neon Auth
+NEXT_PUBLIC_STACK_PROJECT_ID="your_project_id_here"
+NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="your_publishable_key_here"
+STACK_SECRET_SERVER_KEY="your_secret_key_here"
 
 # OpenRouter (Épopée S2)
-OPENROUTER_API_KEY="sk-or-v1-placeholder"
+OPENROUTER_API_KEY="your_openrouter_key_here"
 ```
 
 ### 2. Récupérer les clés Stack Auth 🔴

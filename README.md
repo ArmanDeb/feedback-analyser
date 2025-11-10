@@ -43,10 +43,11 @@ Créez un fichier `.env` à partir de `.env.example`:
 cp .env.example .env
 ```
 
-Remplissez les variables d'environnement avec vos clés:
+Remplissez les variables d'environnement avec vos clés (voir SETUP_GUIDE.md):
 - `DATABASE_URL`: URL de connexion Neon
-- `PUBLIC_CLERK_PUBLISHABLE_KEY`: Clé publique Clerk
-- `CLERK_SECRET_KEY`: Clé secrète Clerk
+- `NEXT_PUBLIC_STACK_PROJECT_ID`: ID du projet Stack Auth
+- `NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY`: Clé publique Stack Auth
+- `STACK_SECRET_SERVER_KEY`: Clé secrète Stack Auth
 - `OPENROUTER_API_KEY`: Clé API OpenRouter (Épopée S2)
 
 4. **Initialiser la base de données:**
@@ -114,10 +115,11 @@ feedback-analyser/
 
 ### Variables d'environnement Netlify
 
-Ajouter dans les paramètres Netlify:
+Ajouter dans les paramètres Netlify (voir SETUP_GUIDE.md):
 - `DATABASE_URL`
-- `PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_STACK_PROJECT_ID`
+- `NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY`
+- `STACK_SECRET_SERVER_KEY`
 - `OPENROUTER_API_KEY`
 
 ## 📖 Documentation
