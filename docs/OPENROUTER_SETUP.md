@@ -50,7 +50,6 @@ OpenRouter offre souvent quelques crédits gratuits pour tester. Sinon :
 Ajoutez cette ligne dans votre fichier `.env` :
 
 ```env
-OPENROUTER_API_KEY="sk-or-v1-VOTRE_CLE_ICI"
 ```
 
 ### 4.2 Configuration Netlify

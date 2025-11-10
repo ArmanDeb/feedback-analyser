@@ -84,16 +84,20 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// 2. Vérifier la clé API
-		if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_key_here') {
+		console.log('🔑 Vérification de la clé OpenRouter...');
+		if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_key_here' || OPENROUTER_API_KEY === '') {
 			console.error('❌ OPENROUTER_API_KEY not configured');
+			console.error('   Current value:', OPENROUTER_API_KEY ? `${OPENROUTER_API_KEY.substring(0, 10)}...` : 'undefined');
 			return json(
 				{
 					error: 'API IA non configurée',
-					details: 'Veuillez configurer OPENROUTER_API_KEY dans vos variables d\'environnement'
+					details: 'Veuillez configurer OPENROUTER_API_KEY dans vos variables d\'environnement',
+					hint: 'Créez un compte sur openrouter.ai et ajoutez la clé dans votre fichier .env'
 				},
 				{ status: 503 }
 			);
 		}
+		console.log('✅ Clé OpenRouter configurée:', OPENROUTER_API_KEY.substring(0, 15) + '...');
 
 		// 3. Appeler l'API OpenRouter
 		console.log('📡 Appel à OpenRouter API...');
@@ -125,12 +129,23 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
-			console.error('❌ Erreur OpenRouter:', response.status, errorData);
+			const errorText = await response.text();
+			console.error('❌ Erreur OpenRouter:', response.status);
+			console.error('   Response:', errorText.substring(0, 500));
+			
+			let errorData: any = {};
+			try {
+				errorData = JSON.parse(errorText);
+			} catch {
+				errorData = { message: errorText };
+			}
+			
 			return json(
 				{
 					error: 'Erreur lors de l\'appel à l\'API IA',
-					details: errorData.error?.message || 'Erreur inconnue'
+					details: errorData.error?.message || errorData.message || 'Erreur inconnue',
+					statusCode: response.status,
+					hint: response.status === 401 ? 'Vérifiez votre clé API OpenRouter' : undefined
 				},
 				{ status: response.status }
 			);
@@ -150,22 +165,44 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// 5. Parser le JSON retourné par l'IA
+		console.log('📄 Réponse brute de l\'IA:', aiResponse.substring(0, 200) + '...');
+		
 		let analysisResult: AnalysisResult;
 		try {
-			// Extraire le JSON de la réponse (au cas où il y aurait du texte autour)
-			const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+			// Nettoyer la réponse
+			let cleanedResponse = aiResponse.trim();
+			
+			// Retirer les markdown code blocks si présents (```json ... ```)
+			cleanedResponse = cleanedResponse.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+			cleanedResponse = cleanedResponse.replace(/^```\s*/i, '').replace(/```\s*$/, '');
+			
+			// Extraire le JSON de la réponse
+			const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
 			if (!jsonMatch) {
+				console.error('❌ Aucun JSON trouvé dans la réponse');
+				console.log('Réponse complète:', aiResponse);
 				throw new Error('Aucun JSON trouvé dans la réponse');
 			}
-			analysisResult = JSON.parse(jsonMatch[0]);
+			
+			const jsonString = jsonMatch[0];
+			console.log('✅ JSON extrait:', jsonString.substring(0, 100) + '...');
+			
+			analysisResult = JSON.parse(jsonString);
+			
+			// Valider que les champs requis sont présents
+			if (!analysisResult.sentiment || !analysisResult.themes) {
+				throw new Error('JSON incomplet - champs manquants');
+			}
+			
 		} catch (parseError) {
 			console.error('❌ Erreur de parsing JSON:', parseError);
-			console.log('Réponse brute:', aiResponse);
+			console.log('📄 Réponse complète:', aiResponse);
 			return json(
 				{
 					error: 'Erreur de parsing de la réponse IA',
-					details: 'La réponse de l\'IA n\'est pas au format JSON valide',
-					rawResponse: aiResponse.substring(0, 500) // Premiers 500 caractères pour debug
+					details: parseError instanceof Error ? parseError.message : 'La réponse de l\'IA n\'est pas au format JSON valide',
+					rawResponse: aiResponse.substring(0, 1000), // Plus de contexte pour debug
+					hint: 'Vérifiez que la clé OPENROUTER_API_KEY est correctement configurée'
 				},
 				{ status: 500 }
 			);
