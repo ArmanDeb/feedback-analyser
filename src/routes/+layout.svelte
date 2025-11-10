@@ -10,7 +10,8 @@
 			<div class="nav-links">
 				<a href="/" class:active={$page.url.pathname === '/'}>Accueil</a>
 				<a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a>
-				<!-- TODO: Intégration Clerk (S1) - Ajouter les boutons Sign In/Sign Up -->
+				<!-- Stack Auth buttons -->
+				<a href="/handler/sign-in" class="btn-auth">Se connecter</a>
 			</div>
 		</div>
 	</nav>
@@ -100,6 +101,24 @@
 		right: 0;
 		height: 2px;
 		background: #667eea;
+	}
+
+	.btn-auth {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white !important;
+		padding: 0.5rem 1.25rem;
+		border-radius: 8px;
+		font-weight: 600;
+		transition: all 0.3s ease;
+	}
+
+	.btn-auth:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+	}
+
+	.btn-auth::after {
+		display: none;
 	}
 
 	main {

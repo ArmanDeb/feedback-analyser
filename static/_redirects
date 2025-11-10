@@ -1,0 +1,3 @@
+# Netlify redirects file
+# SvelteKit gère déjà le routing, pas besoin de redirects spéciaux
+

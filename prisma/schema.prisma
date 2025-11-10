@@ -10,10 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Table des utilisateurs (synchronisée avec Clerk)
+// Table des utilisateurs (synchronisée avec Stack Auth / Neon Auth)
 model User {
   id        String   @id @default(cuid())
-  clerkId   String   @unique // ID de l'utilisateur dans Clerk
+  stackId   String   @unique // ID de l'utilisateur dans Stack Auth
   email     String   @unique
   role      String   @default("user") // "user" ou "admin"
   createdAt DateTime @default(now())
