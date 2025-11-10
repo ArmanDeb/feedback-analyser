@@ -4,4 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Exclure les dossiers de build serveur du scan de secrets
+  # Ces fichiers ne sont JAMAIS exposés publiquement
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/server/**,.svelte-kit/output/server/**"
 
