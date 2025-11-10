@@ -1,0 +1,62 @@
+// Schéma Prisma pour l'Analyseur de Feedback
+// Base de données: Neon (PostgreSQL Serverless)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Table des utilisateurs (synchronisée avec Clerk)
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique // ID de l'utilisateur dans Clerk
+  email     String   @unique
+  role      String   @default("user") // "user" ou "admin"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  analyses  Analysis[]
+  apiLogs   ApiLog[]
+}
+
+// Table des analyses de feedback
+model Analysis {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Contenu
+  feedbackText String   @db.Text // Le feedback brut collé par l'utilisateur
+  result       Json     // Le JSON structuré retourné par l'IA
+  
+  // Métadonnées
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Table des logs API (pour monitoring des coûts - Épopée S3)
+model ApiLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Détails de l'appel
+  modelUsed  String   // Ex: "mistralai/mistral-7b-instruct"
+  tokensIn   Int      // Tokens d'entrée (prompt)
+  tokensOut  Int      // Tokens de sortie (réponse)
+  cost       Float    // Coût en dollars ($)
+  
+  // Métadonnées
+  timestamp  DateTime @default(now())
+  
+  @@index([userId])
+  @@index([timestamp])
+}
+
