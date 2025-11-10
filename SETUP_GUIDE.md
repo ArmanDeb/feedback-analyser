@@ -29,8 +29,7 @@ STACK_SECRET_SERVER_KEY="votre-secret-key"
 
 ### 1.3 OpenRouter (À faire dans l'Épopée S2)
 
-```env
-OPENROUTER_API_KEY="sk-or-v1-placeholder"
+```
 ```
 
 ---
