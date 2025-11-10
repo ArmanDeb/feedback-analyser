@@ -29,39 +29,19 @@ interface AnalysisResult {
 	summary: string;
 }
 
-// Prompt système pour l'IA
-const SYSTEM_PROMPT = `Tu es un expert en analyse de feedback client. 
-Ton rôle est d'analyser les retours clients et d'extraire des insights structurés.
+// Prompt système pour l'IA - Version optimisée
+const SYSTEM_PROMPT = `You are a customer feedback analysis expert. Analyze the feedback and respond ONLY with valid JSON in this exact format (no other text):
 
-Tu dois TOUJOURS répondre avec un JSON valide suivant EXACTEMENT ce format :
-{
-  "sentiment": "positive" | "negative" | "neutral",
-  "score": number (entre -1 et 1),
-  "themes": {
-    "positive": ["thème1", "thème2"],
-    "negative": ["problème1", "problème2"]
-  },
-  "bugs": [
-    {
-      "description": "description du bug",
-      "severity": "low" | "medium" | "high"
-    }
-  ],
-  "featureRequests": [
-    {
-      "description": "description de la fonctionnalité",
-      "priority": "low" | "medium" | "high"
-    }
-  ],
-  "summary": "résumé en 1-2 phrases"
-}
+{"sentiment":"positive","score":0.8,"themes":{"positive":["easy to use"],"negative":["slow"]},"bugs":[{"description":"payment page freezes","severity":"high"}],"featureRequests":[{"description":"add PDF export","priority":"medium"}],"summary":"User loves the product but found a payment bug and wants PDF export"}
 
-Règles importantes :
-- Réponds UNIQUEMENT avec du JSON, aucun texte avant ou après
-- Si aucun bug n'est détecté, retourne un tableau vide []
-- Si aucune fonctionnalité n'est demandée, retourne un tableau vide []
-- Le sentiment doit être déterminé objectivement
-- Le score va de -1 (très négatif) à 1 (très positif)`;
+Rules:
+1. Return ONLY the JSON object, nothing else
+2. sentiment must be "positive", "negative", or "neutral"
+3. score is between -1 and 1
+4. If no bugs found: "bugs":[]
+5. If no features requested: "featureRequests":[]
+6. All text in the user's language
+7. NO markdown, NO code blocks, JUST the JSON`;
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -112,7 +92,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				'X-Title': 'Feedback Analyser'
 			},
 			body: JSON.stringify({
-				model: 'mistralai/mistral-7b-instruct',
+				model: 'mistralai/mistral-7b-instruct:free',
 				messages: [
 					{
 						role: 'system',
@@ -120,11 +100,12 @@ export const POST: RequestHandler = async ({ request }) => {
 					},
 					{
 						role: 'user',
-						content: `Analyse ce feedback client :\n\n${feedbackText}`
+						content: `Analyze this customer feedback and respond with ONLY the JSON object:\n\n"${feedbackText}"\n\nRespond with JSON only:`
 					}
 				],
-				temperature: 0.3, // Faible température pour plus de cohérence
-				max_tokens: 1000
+				temperature: 0.1, // Très faible pour plus de cohérence
+				max_tokens: 1500,
+				response_format: { type: "json_object" }
 			})
 		});
 
