@@ -27,9 +27,7 @@ Votre projet **feedback-analyser** a déjà Neon Auth activé. Il ne reste que 3
 Ouvrez votre fichier `.env` et ajoutez ces 3 lignes :
 
 ```env
-NEXT_PUBLIC_STACK_PROJECT_ID="votre-project-id-ici"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="votre-publishable-key-ici"
-STACK_SECRET_SERVER_KEY="votre-secret-key-ici"
+
 ```
 
 **⚠️ Attention :**
