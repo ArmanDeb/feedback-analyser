@@ -211,13 +211,41 @@ export const POST: RequestHandler = async ({ request }) => {
 			tokens: result.metadata.totalTokens
 		});
 
-		// S2.8: Sauvegarder dans la BDD
-		// Note: Temporairement désactivé car nécessite l'authentification (Stack Auth)
-		// TODO S3: Activer la sauvegarde une fois l'auth configurée
-		/*
+		// S3.4: Sauvegarder dans la BDD + Logging des coûts
+		// Note: Pour le développement, on utilise un user ID fictif
+		// TODO: Remplacer par l'ID réel depuis Stack Auth quand l'auth sera activée
 		try {
-			const userId = "temp-user-id"; // TODO: Récupérer depuis Stack Auth
+			const prisma = await import('$lib/db').then(m => m.prisma);
+			const { calculateCost } = await import('$lib/admin');
 			
+			// User ID temporaire pour le développement
+			const userId = "dev-user-1"; // TODO: Récupérer depuis Stack Auth
+			
+			// Vérifier si l'utilisateur existe, sinon le créer
+			let user = await prisma.user.findUnique({
+				where: { id: userId }
+			});
+
+			if (!user) {
+				user = await prisma.user.create({
+					data: {
+						id: userId,
+						stackId: userId,
+						email: 'dev@feedback-analyser.com', // TODO: Email réel depuis Stack Auth
+						role: 'user'
+					}
+				});
+				console.log('✅ Utilisateur de développement créé');
+			}
+			
+			// Calculer le coût réel
+			const cost = calculateCost(
+				'mistralai/mistral-7b-instruct:free',
+				result.metadata.tokensIn,
+				result.metadata.tokensOut
+			);
+			
+			// Sauvegarder l'analyse
 			await prisma.analysis.create({
 				data: {
 					userId: userId,
@@ -226,20 +254,24 @@ export const POST: RequestHandler = async ({ request }) => {
 				}
 			});
 
+			// Logger l'appel API pour le monitoring
 			await prisma.apiLog.create({
 				data: {
 					userId: userId,
-					modelUsed: 'mistralai/mistral-7b-instruct',
+					modelUsed: 'mistralai/mistral-7b-instruct:free',
 					tokensIn: result.metadata.tokensIn,
 					tokensOut: result.metadata.tokensOut,
-					cost: (result.metadata.totalTokens * 0.0002) / 1000 // Estimation
+					cost: cost
 				}
 			});
+
+			console.log('✅ Analyse et log sauvegardés en BDD (coût:', cost, ')');
+			
 		} catch (dbError) {
 			console.error('❌ Erreur sauvegarde BDD:', dbError);
 			// On ne bloque pas la réponse si la BDD échoue
+			// L'analyse a déjà été effectuée, l'utilisateur la recevra quand même
 		}
-		*/
 
 		return json(result);
 
