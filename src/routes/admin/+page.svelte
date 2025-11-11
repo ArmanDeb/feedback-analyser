@@ -2,6 +2,9 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+	
+	// Vérifier si on a une erreur BDD
+	$: hasDbError = 'error' in data && data.error;
 
 	// Formater les montants en dollars
 	function formatCost(cost: number): string {
@@ -29,8 +32,27 @@
 		<p>Monitoring des coûts et statistiques d'utilisation</p>
 		<div class="user-info">
 			Connecté en tant que: <strong>{data.currentUser.email}</strong>
+			{#if !data.currentUser.isStackAuthEnabled}
+				<span class="dev-mode">Mode Développement</span>
+			{/if}
 		</div>
 	</header>
+
+	{#if hasDbError}
+		<div class="error-banner">
+			<h2>⚠️ Configuration Requise</h2>
+			<p>{data.error}</p>
+			<div class="error-instructions">
+				<h3>Instructions :</h3>
+				<ol>
+					<li>Vérifiez que votre <code>DATABASE_URL</code> est correctement configurée dans le fichier <code>.env</code></li>
+					<li>Le format doit être : <code>postgresql://user:password@host/database?sslmode=require</code></li>
+					<li>Exécutez : <code>npx prisma db push</code> pour créer les tables</li>
+					<li>Rechargez cette page</li>
+				</ol>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Statistiques Globales -->
 	<section class="stats-grid">
@@ -209,6 +231,66 @@
 	.user-info {
 		color: #667eea;
 		font-size: 0.95rem;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.dev-mode {
+		background: #fbbf24;
+		color: #78350f;
+		padding: 0.25rem 0.75rem;
+		border-radius: 12px;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.error-banner {
+		background: #fee2e2;
+		border: 2px solid #ef4444;
+		border-radius: 12px;
+		padding: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	.error-banner h2 {
+		color: #dc2626;
+		margin: 0 0 1rem 0;
+	}
+
+	.error-banner p {
+		color: #991b1b;
+		margin-bottom: 1.5rem;
+	}
+
+	.error-instructions {
+		background: white;
+		padding: 1.5rem;
+		border-radius: 8px;
+	}
+
+	.error-instructions h3 {
+		margin: 0 0 1rem 0;
+		color: #333;
+	}
+
+	.error-instructions ol {
+		margin: 0;
+		padding-left: 1.5rem;
+	}
+
+	.error-instructions li {
+		margin-bottom: 0.5rem;
+		color: #555;
+	}
+
+	.error-instructions code {
+		background: #f3f4f6;
+		padding: 0.125rem 0.5rem;
+		border-radius: 4px;
+		font-family: monospace;
+		font-size: 0.9rem;
+		color: #dc2626;
 	}
 
 	/* Stats Grid */
