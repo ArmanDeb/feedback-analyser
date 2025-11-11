@@ -19,7 +19,7 @@
 		isMenuOpen = false;
 	}
 	
-	function handleSignOut(e) {
+	function handleSignOut(e?: MouseEvent) {
 		e?.preventDefault();
 		e?.stopPropagation();
 		console.log('🔓 Déconnexion en cours...');
@@ -58,10 +58,17 @@
 						</button>
 						
 						{#if isMenuOpen}
-							<div class="dropdown-menu" on:click|stopPropagation>
+							<div 
+								class="dropdown-menu" 
+								role="menu"
+								tabindex="-1"
+								on:click|stopPropagation
+								on:keydown={(e) => e.key === 'Escape' && closeMenu()}
+							>
 								<a 
 									href="/compte/utilisation" 
-									on:click={(e) => { 
+									role="menuitem"
+									on:click={() => { 
 										console.log('📊 Clic sur Mon Utilisation'); 
 										closeMenu(); 
 									}}
@@ -70,8 +77,9 @@
 								</a>
 								{#if isAdmin}
 									<a 
-										href="/dashboard-admin" 
-										on:click={(e) => { 
+										href="/dashboard-admin"
+										role="menuitem"
+										on:click={() => { 
 											console.log('👑 Clic sur Admin'); 
 											closeMenu(); 
 										}}
@@ -83,6 +91,7 @@
 								<button 
 									class="sign-out-btn" 
 									type="button"
+									role="menuitem"
 									on:click={(e) => {
 										console.log('👋 Clic sur Se déconnecter');
 										handleSignOut(e);
