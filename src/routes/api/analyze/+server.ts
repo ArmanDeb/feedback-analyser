@@ -72,58 +72,115 @@ interface AnalysisResult {
 	summary: string;
 }
 
-// Prompt système pour l'IA - Version 2 (Optimisée pour la fiabilité)
-const SYSTEM_PROMPT = `You are an expert customer feedback analyst. Your task is to analyze feedback text and return STRUCTURED JSON data.
+// Prompt système pour l'IA - Version 3.2 (Échelle 0-10)
+const SYSTEM_PROMPT = `You are an expert customer experience analyst. Analyze feedback to identify friction points and strengths.
 
 CRITICAL INSTRUCTIONS:
-- Return ONLY a valid JSON object
-- NO additional text, explanations, or markdown
-- NO code blocks (no \`\`\`json or \`\`\`)
-- Just the raw JSON object
+- Return ONLY valid JSON
+- NO markdown, explanations, or code blocks
+- Keep quotes SHORT (max 15 words each)
+- Use simple strings, avoid complex nested arrays
+- Score scale: 0 to 10 (0 = very negative, 5 = neutral, 10 = very positive)
 
 REQUIRED JSON STRUCTURE:
 {
-  "sentiment": "positive" | "negative" | "neutral",
-  "score": number between -1.0 (very negative) and 1.0 (very positive),
-  "themes": {
-    "positive": ["array", "of", "strings"],
-    "negative": ["array", "of", "strings"]
+  "executiveSummary": {
+    "keyInsight": "One clear sentence summarizing the main finding",
+    "overallSentiment": "positive|negative|neutral",
+    "sentimentScore": 5.0,
+    "topFrictionPoints": [
+      {
+        "category": "Category name",
+        "issue": "Specific issue description",
+        "priority": 1,
+        "impact": 2.0,
+        "quote": "Short relevant quote",
+        "recommendation": "Specific action to take"
+      }
+    ],
+    "topStrengthPoints": [
+      {
+        "category": "Category name",
+        "strength": "Specific positive aspect",
+        "priority": 1,
+        "impact": 8.5,
+        "quote": "Short positive quote"
+      }
+    ]
   },
-  "bugs": [
-    {"description": "string", "severity": "low"|"medium"|"high"}
+  "allThemes": [
+    {
+      "category": "Main category",
+      "subtheme": "Subcategory",
+      "specificIssue": "Detailed issue",
+      "sentiment": "positive|negative|neutral",
+      "mentionCount": 1,
+      "impactScore": 6.5,
+      "quotes": ["short quote"]
+    }
   ],
-  "featureRequests": [
-    {"description": "string", "priority": "low"|"medium"|"high"}
+  "driverReport": {
+    "themesByVolume": [
+      {"theme": "Theme name", "volume": 1, "percentage": 50.0}
+    ],
+    "themesBySentimentImpact": [
+      {"theme": "Theme name", "sentimentImpact": 3.5, "sentiment": "negative"}
+    ]
+  },
+  "rootCauseAnalyses": [
+    {
+      "frictionPoint": "Main issue",
+      "subthemes": [
+        {
+          "name": "Subtheme",
+          "specificCauses": ["Cause 1"],
+          "quotes": ["Quote"]
+        }
+      ]
+    }
   ],
-  "summary": "concise 1-2 sentence summary"
+  "actionableInsights": [
+    {
+      "frictionPoint": "Issue",
+      "recommendation": "Action",
+      "priority": "high|medium|low"
+    }
+  ],
+  "sentiment": "positive|negative|neutral",
+  "score": 5.0,
+  "themes": {
+    "positive": ["theme1"],
+    "negative": ["theme2"]
+  },
+  "bugs": [{"description": "bug", "severity": "high|medium|low"}],
+  "featureRequests": [{"description": "feature", "priority": "high|medium|low"}],
+  "summary": "Brief summary"
 }
 
-SCORING GUIDE:
-- Very positive (0.7 to 1.0): enthusiastic praise, no major issues
-- Positive (0.3 to 0.7): generally satisfied with minor issues
-- Neutral (-0.3 to 0.3): mixed feelings or factual feedback
-- Negative (-0.7 to -0.3): dissatisfied with some positives
-- Very negative (-1.0 to -0.7): highly critical, angry, disappointed
+SCORING GUIDE (0-10 scale):
+- 9-10: Exceptional, highly enthusiastic praise
+- 7-8: Very positive, satisfied with minor issues
+- 5-6: Neutral to slightly positive, mixed feelings
+- 3-4: Negative, dissatisfied with some positives
+- 0-2: Very negative, highly critical, angry
 
-EDGE CASES:
-1. Empty feedback: Return neutral sentiment (0.0), empty arrays, summary: "No feedback provided"
-2. Vague feedback: Extract what you can, mark as neutral if unclear
-3. Mixed feedback: Balance positive/negative in score, list both themes
-4. No bugs/features: Use empty arrays []
-5. Multiple languages: Respond in the same language as input
+IMPACT SCORES (0-10):
+- Friction points (negative): 0-4 (lower = worse experience)
+- Strength points (positive): 6-10 (higher = better experience)
+- Neutral points: around 5
 
-SEVERITY/PRIORITY RULES:
-- High severity bugs: crashes, data loss, payment issues, security problems
-- Medium severity: inconvenient bugs that affect workflow
-- Low severity: minor UI glitches, cosmetic issues
-- High priority features: frequently requested, core functionality gaps
-- Medium priority: nice-to-have improvements
-- Low priority: minor enhancements
+RULES:
+- For TOP friction/strength points: maximum 3 each
+- Quotes: Extract from feedback, max 15 words, no special chars that break JSON
+- Escape quotes in strings properly
+- Keep it simple and valid JSON
+- Calculate percentages: (volume / total) * 100
+- All scores and impacts must be between 0 and 10
 
-EXAMPLE (what you should return):
-{"sentiment":"positive","score":0.6,"themes":{"positive":["intuitive interface","fast response"],"negative":["expensive pricing"]},"bugs":[{"description":"login button not clickable on mobile","severity":"high"}],"featureRequests":[{"description":"add dark mode","priority":"medium"}],"summary":"User appreciates the interface and speed but finds pricing high and encountered a mobile login bug"}
+EXAMPLE:
+{"executiveSummary":{"keyInsight":"Users love design but performance is critical issue","overallSentiment":"negative","sentimentScore":3.5,"topFrictionPoints":[{"category":"Performance","issue":"Slow page load","priority":1,"impact":1.5,"quote":"site takes 10 seconds to load","recommendation":"Optimize images and implement CDN"}],"topStrengthPoints":[{"category":"Design","strength":"Modern UI","priority":1,"impact":8.5,"quote":"design is really modern and intuitive"}]},"allThemes":[{"category":"Performance","subtheme":"Speed","specificIssue":"Slow loading","sentiment":"negative","mentionCount":1,"impactScore":1.5,"quotes":["site takes 10 seconds"]}],"driverReport":{"themesByVolume":[{"theme":"Performance","volume":1,"percentage":50.0}],"themesBySentimentImpact":[{"theme":"Performance","sentimentImpact":1.5,"sentiment":"negative"}]},"rootCauseAnalyses":[{"frictionPoint":"Performance","subthemes":[{"name":"Loading time","specificCauses":["Large images"],"quotes":["takes 10 seconds"]}]}],"actionableInsights":[{"frictionPoint":"Slow loading","recommendation":"Optimize assets","priority":"high"}],"sentiment":"negative","score":3.5,"themes":{"positive":["design"],"negative":["performance"]},"bugs":[{"description":"slow load","severity":"high"}],"featureRequests":[],"summary":"Good design but slow performance"}
 
-NOW ANALYZE THE FEEDBACK AND RETURN ONLY THE JSON OBJECT:`;
+NOW ANALYZE AND RETURN JSON ONLY:`;
 
 export const POST: RequestHandler = async (event) => {
 	const { request } = event;
@@ -214,13 +271,13 @@ export const POST: RequestHandler = async (event) => {
 					},
 					{
 						role: 'user',
-									content: `FEEDBACK TO ANALYZE:\n\n"${feedbackText}"\n\nRETURN JSON ONLY (no other text):`
+									content: `FEEDBACK TO ANALYZE:\n\n"${feedbackText}"\n\nRETURN ONLY VALID JSON:`
 					}
 				],
-							temperature: 0.1,
-							max_tokens: 2000,
+							temperature: 0.05,
+							max_tokens: 3000,
 							response_format: { type: "json_object" },
-							top_p: 0.9
+							top_p: 0.95
 			})
 					}),
 					API_TIMEOUT_MS,
@@ -323,12 +380,40 @@ export const POST: RequestHandler = async (event) => {
 			
 			analysisResult = JSON.parse(jsonString);
 			
-			// Validation et normalisation des champs
+			// Validation et normalisation des champs (nouveau format enrichi)
+			
+			// Nouveaux champs enrichis
+			if (!analysisResult.executiveSummary) {
+				analysisResult.executiveSummary = {
+					topFrictionPoints: [],
+					topStrengthPoints: [],
+					overallSentiment: 'neutral',
+					sentimentScore: 0,
+					keyInsight: 'Analyse complétée'
+				} as any;
+			}
+			if (!analysisResult.allThemes) {
+				analysisResult.allThemes = [];
+			}
+			if (!analysisResult.driverReport) {
+				analysisResult.driverReport = {
+					themesByVolume: [],
+					themesBySentimentImpact: []
+				} as any;
+			}
+			if (!analysisResult.rootCauseAnalyses) {
+				analysisResult.rootCauseAnalyses = [];
+			}
+			if (!analysisResult.actionableInsights) {
+				analysisResult.actionableInsights = [];
+			}
+			
+			// Anciens champs (rétrocompatibilité)
 			if (!analysisResult.sentiment) {
-				analysisResult.sentiment = 'neutral';
+				analysisResult.sentiment = analysisResult.executiveSummary?.overallSentiment || 'neutral';
 			}
 			if (!analysisResult.score && analysisResult.score !== 0) {
-				analysisResult.score = 0;
+				analysisResult.score = analysisResult.executiveSummary?.sentimentScore || 0;
 			}
 			if (!analysisResult.themes) {
 				analysisResult.themes = { positive: [], negative: [] };
@@ -346,7 +431,7 @@ export const POST: RequestHandler = async (event) => {
 				analysisResult.featureRequests = [];
 			}
 			if (!analysisResult.summary) {
-				analysisResult.summary = 'Analyse complétée';
+				analysisResult.summary = analysisResult.executiveSummary?.keyInsight || 'Analyse complétée';
 			}
 			
 			// Valider que le sentiment est valide
@@ -356,21 +441,99 @@ export const POST: RequestHandler = async (event) => {
 				analysisResult.sentiment = 'neutral' as any;
 			}
 			
-			// Valider que le score est dans les limites
-			if (analysisResult.score < -1) analysisResult.score = -1;
-			if (analysisResult.score > 1) analysisResult.score = 1;
+			// Convertir automatiquement les scores de l'ancien format (-1 à 1) vers 0-10
+			// Si le score est entre -1 et 1, c'est l'ancien format, on convertit
+			if (analysisResult.score >= -1 && analysisResult.score <= 1) {
+				console.log(`🔄 Conversion du score de l'ancien format: ${analysisResult.score} → ${((analysisResult.score + 1) / 2 * 10).toFixed(1)}`);
+				analysisResult.score = (analysisResult.score + 1) / 2 * 10; // -1 devient 0, 0 devient 5, 1 devient 10
+			}
 			
-			console.log('✅ JSON validé et normalisé');
+			// Valider que le score est dans les limites (échelle 0-10)
+			if (analysisResult.score < 0) analysisResult.score = 0;
+			if (analysisResult.score > 10) analysisResult.score = 10;
+			
+			// Convertir et valider le sentimentScore dans executiveSummary
+			if (analysisResult.executiveSummary?.sentimentScore !== undefined) {
+				// Convertir si ancien format
+				if (analysisResult.executiveSummary.sentimentScore >= -1 && analysisResult.executiveSummary.sentimentScore <= 1) {
+					console.log(`🔄 Conversion sentimentScore: ${analysisResult.executiveSummary.sentimentScore} → ${((analysisResult.executiveSummary.sentimentScore + 1) / 2 * 10).toFixed(1)}`);
+					analysisResult.executiveSummary.sentimentScore = (analysisResult.executiveSummary.sentimentScore + 1) / 2 * 10;
+				}
+				// Valider limites
+				if (analysisResult.executiveSummary.sentimentScore < 0) analysisResult.executiveSummary.sentimentScore = 0;
+				if (analysisResult.executiveSummary.sentimentScore > 10) analysisResult.executiveSummary.sentimentScore = 10;
+			}
+			
+			// Convertir les impacts des friction/strength points si nécessaire
+			if (analysisResult.executiveSummary?.topFrictionPoints) {
+				analysisResult.executiveSummary.topFrictionPoints.forEach((fp: any) => {
+					if (fp.impact !== undefined && fp.impact >= -1 && fp.impact <= 1) {
+						fp.impact = (fp.impact + 1) / 2 * 10;
+					}
+					// Friction points devraient être 0-4 (bas = mauvais)
+					if (fp.impact > 5) fp.impact = 5 - (fp.impact - 5); // Inverser si nécessaire
+				});
+			}
+			
+			if (analysisResult.executiveSummary?.topStrengthPoints) {
+				analysisResult.executiveSummary.topStrengthPoints.forEach((sp: any) => {
+					if (sp.impact !== undefined && sp.impact >= -1 && sp.impact <= 1) {
+						sp.impact = (sp.impact + 1) / 2 * 10;
+					}
+					// Strength points devraient être 6-10 (haut = bon)
+					if (sp.impact < 5) sp.impact = 5 + (5 - sp.impact); // Ajuster si nécessaire
+				});
+			}
+			
+			// Convertir impactScore dans allThemes
+			if (analysisResult.allThemes) {
+				analysisResult.allThemes.forEach((theme: any) => {
+					if (theme.impactScore !== undefined && theme.impactScore >= -1 && theme.impactScore <= 1) {
+						theme.impactScore = (theme.impactScore + 1) / 2 * 10;
+					}
+				});
+			}
+			
+			// Convertir sentimentImpact dans driverReport
+			if (analysisResult.driverReport?.themesBySentimentImpact) {
+				analysisResult.driverReport.themesBySentimentImpact.forEach((item: any) => {
+					if (item.sentimentImpact !== undefined && item.sentimentImpact >= -1 && item.sentimentImpact <= 1) {
+						item.sentimentImpact = (item.sentimentImpact + 1) / 2 * 10;
+					}
+				});
+			}
+			
+			console.log('✅ JSON validé, normalisé et converti vers échelle 0-10');
 			
 		} catch (parseError) {
 			console.error('❌ Erreur de parsing JSON:', parseError);
-			console.log('📄 Réponse complète:', aiResponse);
+			console.error('📄 Réponse complète (longueur:', aiResponse.length, ')');
+			
+			// Logger les 500 premiers et 500 derniers caractères pour debug
+			console.error('Début:', aiResponse.substring(0, 500));
+			console.error('Fin:', aiResponse.substring(Math.max(0, aiResponse.length - 500)));
+			
+			// Si l'erreur contient une position, logger le contexte
+			if (parseError instanceof Error && parseError.message.includes('position')) {
+				const match = parseError.message.match(/position (\d+)/);
+				if (match) {
+					const pos = parseInt(match[1]);
+					const start = Math.max(0, pos - 100);
+					const end = Math.min(aiResponse.length, pos + 100);
+					console.error('Contexte autour de l\'erreur (position', pos, '):', aiResponse.substring(start, end));
+				}
+			}
+			
 			return json(
 				{
 					error: 'Erreur de parsing de la réponse IA',
 					details: parseError instanceof Error ? parseError.message : 'La réponse de l\'IA n\'est pas au format JSON valide',
-					rawResponse: aiResponse.substring(0, 1000), // Plus de contexte pour debug
-					hint: 'L\'IA a peut-être retourné une réponse malformée. Réessayez ou contactez le support.'
+					hint: 'Le modèle IA a généré un JSON malformé. Essayez avec un feedback plus court ou plus simple.',
+					debug: {
+						responseLength: aiResponse.length,
+						firstChars: aiResponse.substring(0, 200),
+						lastChars: aiResponse.substring(Math.max(0, aiResponse.length - 200))
+					}
 				},
 				{ status: 500 }
 			);

@@ -26,8 +26,12 @@
 		return text.substring(0, maxLength) + '...';
 	}
 
-	function getSentimentGaugeRotation(score: number): number {
-		return ((score + 1) / 2) * 180;
+	function getStarsFromScore(score: number): { full: number, half: boolean, empty: number } {
+		const stars = (score / 10) * 5;
+		const full = Math.floor(stars);
+		const half = stars - full >= 0.5;
+		const empty = 5 - full - (half ? 1 : 0);
+		return { full, half, empty };
 	}
 
 	function getSentimentColor(sentiment: string): string {
@@ -36,6 +40,12 @@
 			case 'negative': return '#ef4444';
 			default: return '#6b7280';
 		}
+	}
+
+	function getScoreColor(score: number): string {
+		if (score >= 7) return '#10b981';
+		if (score >= 4) return '#f59e0b';
+		return '#ef4444';
 	}
 
 	function getSeverityColor(severity: string): string {
@@ -153,20 +163,40 @@
 						</span>
 					</div>
 					
-					<div class="sentiment-gauge-container">
-						<svg class="sentiment-gauge" viewBox="0 0 200 120" width="200" height="120">
-							<path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="20" stroke-linecap="round"/>
-							<path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="{getSentimentColor(displayResult.sentiment)}" stroke-width="20" stroke-linecap="round" stroke-dasharray="{((displayResult.score + 1) / 2) * 251.2} 251.2" style="transition: stroke-dasharray 1s ease;"/>
-							<g transform="translate(100, 100) rotate({getSentimentGaugeRotation(displayResult.score) - 90})">
-								<line x1="0" y1="0" x2="70" y2="0" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-								<circle cx="0" cy="0" r="5" fill="#333"/>
-							</g>
-							<text x="15" y="115" font-size="10" fill="#999">-1</text>
-							<text x="93" y="30" font-size="10" fill="#999">0</text>
-							<text x="178" y="115" font-size="10" fill="#999">+1</text>
-						</svg>
-						<div class="sentiment-score">Score: {displayResult.score.toFixed(2)}</div>
-					</div>
+					{#if displayResult.score !== undefined}
+						{@const stars = getStarsFromScore(displayResult.score)}
+						<div class="sentiment-stars-container">
+							<div class="stars-display">
+								{#each Array(stars.full) as _, i}
+									<svg class="star star-full" viewBox="0 0 24 24" fill="{getScoreColor(displayResult.score)}" xmlns="http://www.w3.org/2000/svg">
+										<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+									</svg>
+								{/each}
+								{#if stars.half}
+									<svg class="star star-half" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+										<defs>
+											<linearGradient id="halfStarGradientDB">
+												<stop offset="50%" stop-color="{getScoreColor(displayResult.score)}" />
+												<stop offset="50%" stop-color="#e5e7eb" />
+											</linearGradient>
+										</defs>
+										<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#halfStarGradientDB)"/>
+									</svg>
+								{/if}
+								{#each Array(stars.empty) as _, i}
+									<svg class="star star-empty" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+										<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+									</svg>
+								{/each}
+							</div>
+							<div class="sentiment-score" style="color: {getScoreColor(displayResult.score)}; font-size: 1.5rem; font-weight: 700;">
+								{((displayResult.score / 10) * 5).toFixed(1)}/5 étoiles
+							</div>
+							<div class="sentiment-score-detail" style="font-size: 0.9rem; color: #999;">
+								{displayResult.score.toFixed(1)}/10
+							</div>
+						</div>
+					{/if}
 					
 					<p class="summary">{displayResult.summary}</p>
 				</div>
@@ -542,15 +572,32 @@
 		font-size: 0.85rem;
 	}
 
-	.sentiment-gauge-container {
+	.sentiment-stars-container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		margin: 1.5rem 0;
+		margin: 2rem 0;
+		gap: 1rem;
 	}
 
-	.sentiment-gauge {
-		margin-bottom: 0.5rem;
+	.stars-display {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.star {
+		width: 48px;
+		height: 48px;
+		transition: transform 0.2s ease;
+	}
+
+	.star:hover {
+		transform: scale(1.15);
+	}
+
+	.star-full {
+		filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 	}
 
 	.sentiment-score {
@@ -558,6 +605,13 @@
 		font-weight: 600;
 		color: #667eea;
 		text-align: center;
+	}
+
+	.sentiment-score-detail {
+		text-align: center;
+		font-size: 0.9rem;
+		color: #999;
+		font-weight: 500;
 	}
 
 	.summary {
