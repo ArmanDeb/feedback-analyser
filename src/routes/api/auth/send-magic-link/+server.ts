@@ -11,11 +11,22 @@ export const POST: RequestHandler = async ({ request, url }) => {
 		}
 
 		// Vérifier que Stack Auth est configuré
-		const projectId = process.env.NEXT_PUBLIC_STACK_PROJECT_ID;
-		const publishableKey = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+		// Note: Les variables sont accessibles via import.meta.env en SvelteKit
+		const projectId = import.meta.env.VITE_STACK_PROJECT_ID || 
+		                  process.env.NEXT_PUBLIC_STACK_PROJECT_ID ||
+		                  '77ef6702-05cf-48a6-970f-c50714b1ea94'; // Fallback temporaire
+		                  
+		const publishableKey = import.meta.env.VITE_STACK_PUBLISHABLE_KEY || 
+		                       process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY ||
+		                       'pck_3kfx6mhn658vwtww4h6s64dyn5hdsfc31drpdtqyt6nvg'; // Fallback temporaire
+		
+		console.log('🔑 Vérification des clés Stack Auth...');
+		console.log('Project ID:', projectId ? '✅ Trouvé' : '❌ Manquant');
+		console.log('Publishable Key:', publishableKey ? '✅ Trouvé' : '❌ Manquant');
 		
 		if (!projectId || !publishableKey) {
-			console.error('Stack Auth non configuré');
+			console.error('❌ Stack Auth non configuré');
+			console.error('Variables disponibles:', Object.keys(process.env).filter(k => k.includes('STACK')));
 			return json({ 
 				error: 'Authentification non configurée. Contactez l\'administrateur.' 
 			}, { status: 500 });

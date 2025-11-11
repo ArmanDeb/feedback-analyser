@@ -11,11 +11,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Vérifier que Stack Auth est configuré
-		const projectId = process.env.NEXT_PUBLIC_STACK_PROJECT_ID;
-		const secretKey = process.env.STACK_SECRET_SERVER_KEY;
+		const projectId = import.meta.env.VITE_STACK_PROJECT_ID || 
+		                  process.env.NEXT_PUBLIC_STACK_PROJECT_ID ||
+		                  '77ef6702-05cf-48a6-970f-c50714b1ea94'; // Fallback temporaire
+		                  
+		const secretKey = import.meta.env.VITE_STACK_SECRET_KEY || 
+		                  process.env.STACK_SECRET_SERVER_KEY ||
+		                  'ssk_q5rwxxwpvg59nhv4yqf0wa3787nmkkpvdzf4esnce7gzr'; // Fallback temporaire
 		
 		if (!projectId || !secretKey) {
-			console.error('Stack Auth non configuré');
+			console.error('❌ Stack Auth non configuré');
 			return json({ 
 				error: 'Authentification non configurée' 
 			}, { status: 500 });
