@@ -1,37 +1,28 @@
 // Page load function pour le dashboard admin
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { isAdmin, getGlobalStats, getUserStats, getRecentApiLogs, estimateMonthlyCost } from '$lib/admin';
-import { stackServerApp } from '$lib/stack';
 
-export const load: PageServerLoad = async ({ request }) => {
-	// Récupérer l'utilisateur depuis Stack Auth
-	let user;
-	let isStackAuthEnabled = true;
+export const load: PageServerLoad = async ({ locals }) => {
+	// Récupérer l'utilisateur depuis locals (configuré dans hooks.server.ts)
+	const user = locals.user;
 	
-	try {
-		user = await stackServerApp.getUser({ request });
-	} catch (err) {
-		console.warn('⚠️ Stack Auth non configuré ou erreur:', err);
-		isStackAuthEnabled = false;
-		
-		// Mode développement : utilisateur fictif
-		user = {
+	// Mode développement : pas d'auth configurée
+	const devMode = !user;
+	let effectiveUser = user;
+	
+	if (devMode) {
+		console.warn('🔓 Mode développement - Dashboard admin accessible sans authentification');
+		effectiveUser = {
 			id: 'dev-user-1',
 			email: 'admin@feedback-analyser.com',
-			displayName: 'Admin Dev'
+			displayName: 'Admin Dev',
+			signedUpAt: new Date()
 		};
 	}
 
-	// Si pas d'utilisateur et Stack Auth activé, rediriger vers sign-in
-	if (!user && isStackAuthEnabled) {
-		throw error(401, {
-			message: 'Vous devez être connecté pour accéder à cette page.'
-		});
-	}
-
 	// Vérifier si l'utilisateur est admin
-	if (!isAdmin(user)) {
+	if (!isAdmin(effectiveUser)) {
 		throw error(403, {
 			message: 'Accès refusé. Vous devez être administrateur pour accéder à cette page.'
 		});
@@ -52,10 +43,10 @@ export const load: PageServerLoad = async ({ request }) => {
 			recentLogs,
 			monthlyCostEstimate,
 			currentUser: {
-				id: user.id,
-				email: user.email || 'dev@feedback-analyser.com',
-				displayName: user.displayName || 'Admin',
-				isStackAuthEnabled
+				id: effectiveUser.id,
+				email: effectiveUser.email,
+				displayName: effectiveUser.displayName,
+				isStackAuthEnabled: !devMode
 			}
 		};
 	} catch (err) {
@@ -80,10 +71,10 @@ export const load: PageServerLoad = async ({ request }) => {
 				dailyAverage: 0
 			},
 			currentUser: {
-				id: user?.id || 'dev-user-1',
-				email: user?.email || 'admin@feedback-analyser.com',
-				displayName: user?.displayName || 'Admin Dev',
-				isStackAuthEnabled
+				id: effectiveUser.id,
+				email: effectiveUser.email,
+				displayName: effectiveUser.displayName,
+				isStackAuthEnabled: !devMode
 			},
 			error: 'La base de données n\'est pas encore configurée. Exécutez "npx prisma db push" pour créer les tables.'
 		};

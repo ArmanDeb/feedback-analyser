@@ -1,15 +1,19 @@
 // Configuration Stack Auth Server pour SvelteKit
 // Stack Auth est utilisé par Neon Auth
 
-// Note: Stack Auth est conçu pour Next.js et n'est pas entièrement compatible avec SvelteKit
-// Pour l'instant, nous utilisons un mode développement mocké
-// TODO: Migrer vers Auth.js (NextAuth) ou Lucia Auth pour une meilleure compatibilité SvelteKit
+import { StackServerApp } from "@stackframe/stack";
 
-let stackServerApp: any = null;
+// Vérifier si les clés Stack Auth sont configurées
+const hasStackAuthKeys = 
+  process.env.NEXT_PUBLIC_STACK_PROJECT_ID && 
+  process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY && 
+  process.env.STACK_SECRET_SERVER_KEY;
 
-// Tentative d'initialisation Stack Auth (peut échouer si non configuré)
-try {
-  const { StackServerApp } = await import("@stackframe/stack");
+let stackServerApp: any;
+
+if (hasStackAuthKeys) {
+  // Stack Auth configuré : mode production
+  console.log('✅ Stack Auth configuré (Neon Auth)');
   
   stackServerApp = new StackServerApp({
     tokenStore: "nextjs-cookie",
@@ -20,13 +24,15 @@ try {
       afterSignUp: "/dashboard",
     }
   });
-} catch (err) {
-  console.warn('⚠️ Stack Auth non disponible (normal en mode développement)');
+} else {
+  // Stack Auth non configuré : mode développement
+  console.warn('⚠️ Stack Auth non configuré - Mode développement activé');
+  console.warn('💡 Consultez docs/NEON_AUTH_SETUP.md pour configurer l\'authentification');
   
   // Mock pour le développement
   stackServerApp = {
     async getUser() {
-      return null; // Pas d'utilisateur authentifié
+      return null; // Pas d'utilisateur authentifié en mode dev
     }
   };
 }
