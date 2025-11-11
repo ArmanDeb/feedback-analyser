@@ -1,0 +1,67 @@
+// API endpoint pour envoyer un magic link via Stack Auth
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+
+export const POST: RequestHandler = async ({ request, url }) => {
+	try {
+		const { email, type } = await request.json();
+		
+		if (!email) {
+			return json({ error: 'Email requis' }, { status: 400 });
+		}
+
+		// Vérifier que Stack Auth est configuré
+		const projectId = process.env.NEXT_PUBLIC_STACK_PROJECT_ID;
+		const publishableKey = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+		
+		if (!projectId || !publishableKey) {
+			console.error('Stack Auth non configuré');
+			return json({ 
+				error: 'Authentification non configurée. Contactez l\'administrateur.' 
+			}, { status: 500 });
+		}
+
+		console.log('📧 Envoi du magic link à:', email);
+		console.log('🔑 Project ID:', projectId);
+
+		// Stack Auth API endpoint pour les magic links
+		const stackAuthUrl = 'https://api.stack-auth.com/api/v1/auth/otp/send';
+		
+		const response = await fetch(stackAuthUrl, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-stack-project-id': projectId,
+				'x-stack-publishable-client-key': publishableKey,
+			},
+			body: JSON.stringify({
+				email,
+				callback_url: `${url.origin}/auth/callback`,
+			})
+		});
+
+		if (!response.ok) {
+			const errorData = await response.text();
+			console.error('❌ Erreur Stack Auth:', response.status, errorData);
+			
+			return json({ 
+				error: 'Erreur lors de l\'envoi du magic link. Réessayez.' 
+			}, { status: response.status });
+		}
+
+		const data = await response.json();
+		console.log('✅ Magic link envoyé avec succès');
+
+		return json({ 
+			success: true,
+			message: `Magic link envoyé à ${email}. Vérifiez votre boîte email !`
+		});
+
+	} catch (error) {
+		console.error('❌ Erreur inattendue:', error);
+		return json({ 
+			error: 'Une erreur est survenue. Réessayez plus tard.' 
+		}, { status: 500 });
+	}
+};
+

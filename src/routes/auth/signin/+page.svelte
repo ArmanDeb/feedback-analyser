@@ -12,18 +12,33 @@
 		message = '';
 		
 		try {
-			// Pour l'instant, on utilise l'approche simple : redirection vers Stack Auth
-			// Stack Auth va gérer le magic link automatiquement
+			console.log('📧 Envoi du magic link via Neon Auth/Stack Auth...');
 			
-			// Afficher un message à l'utilisateur
-			message = `Magic link envoyé à ${email} ! Vérifiez votre boîte email (et vos spams).`;
+			// Appeler notre API qui utilise Stack Auth
+			const response = await fetch('/api/auth/send-magic-link', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					email,
+					type: 'signin'
+				})
+			});
 			
-			// Simuler un délai
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			const data = await response.json();
+			
+			if (response.ok) {
+				message = data.message || `Magic link envoyé à ${email} ! Vérifiez votre boîte email (et vos spams).`;
+				console.log('✅ Magic link envoyé avec succès');
+			} else {
+				error = data.error || 'Une erreur est survenue. Réessayez.';
+				console.error('❌ Erreur:', data.error);
+			}
 			
 		} catch (e: any) {
-			console.error('Erreur sign-in:', e);
-			error = e.message || 'Une erreur est survenue. Réessayez.';
+			console.error('❌ Erreur sign-in:', e);
+			error = 'Une erreur est survenue. Vérifiez votre connexion.';
 		} finally {
 			loading = false;
 		}
