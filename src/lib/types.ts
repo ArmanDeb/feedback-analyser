@@ -27,6 +27,8 @@ export interface AnalysisMetadata {
 	totalTokens: number;
 	duration: number;
 	timestamp: string;
+	fromCache?: boolean;
+	cachedAt?: string;
 }
 
 // Réponse complète de l'API
@@ -41,5 +43,13 @@ export interface ApiError {
 	error: string;
 	details?: string;
 	rawResponse?: string;
+}
+
+// Analyse sauvegardée (historique)
+export interface SavedAnalysis {
+	id: string;
+	feedbackText: string;
+	result: AnalysisResult;
+	createdAt: string;
 }
 
