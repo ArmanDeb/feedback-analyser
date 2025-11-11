@@ -3,21 +3,10 @@ import { prisma } from './db';
 
 // Vérifier si un utilisateur est admin
 export function isAdmin(user: any): boolean {
-	// TODO S3.1: Intégrer avec Stack Auth
-	// Pour l'instant, on simule avec un email
 	if (!user) return false;
 	
-	// En production, vérifier user.role === 'admin' depuis la BDD
-	// const dbUser = await prisma.user.findUnique({ where: { stackId: user.id } });
-	// return dbUser?.role === 'admin';
-	
-	// Pour le développement, on peut hardcoder des emails admin
-	const adminEmails = [
-		'admin@feedback-analyser.com',
-		'votre-email@exemple.com' // À remplacer par votre email
-	];
-	
-	return adminEmails.includes(user.email?.toLowerCase() || '');
+	// Vérifier le rôle de l'utilisateur depuis Lucia Auth
+	return user.role === 'admin';
 }
 
 // Récupérer les statistiques globales

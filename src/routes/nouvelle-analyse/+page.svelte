@@ -1,18 +1,11 @@
 <script lang="ts">
-	import type { AnalyzeResponse, ApiError, SavedAnalysis } from '$lib/types';
-	import type { PageData } from './$types';
+	import type { AnalyzeResponse, ApiError } from '$lib/types';
 
-	export let data: PageData;
-
-	// Dashboard - Interface principale de l'utilisateur
+	// Nouvelle Analyse - Interface d'analyse sans historique
 	let feedback = '';
 	let isAnalyzing = false;
 	let analysisResult: AnalyzeResponse | null = null;
 	let error: string | null = null;
-	
-	// Historique des analyses
-	let analyses = data.analyses || [];
-	let selectedHistoryItem: SavedAnalysis | null = null;
 	
 	// Validation en temps réel
 	const MAX_FEEDBACK_LENGTH = 5000;
@@ -66,9 +59,6 @@
 			analysisResult = data as AnalyzeResponse;
 			console.log('✅ Analyse complétée:', analysisResult);
 
-			// Recharger l'historique après l'analyse
-			await reloadHistory();
-
 		} catch (err) {
 			console.error('❌ Erreur lors de l\'analyse:', err);
 			// Messages d'erreur plus explicites
@@ -88,40 +78,8 @@
 		}
 	}
 
-	async function reloadHistory() {
-		try {
-			const response = await fetch('/api/analyses');
-			if (response.ok) {
-				const data = await response.json();
-				analyses = data.analyses || [];
-			}
-		} catch (err) {
-			console.error('❌ Erreur lors du rechargement de l\'historique:', err);
-		}
-	}
-
-	function viewHistoryItem(item: SavedAnalysis) {
-		selectedHistoryItem = item;
-		// Scroll vers les résultats
-		document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
-	}
-
-	function formatDate(dateString: string): string {
-		const date = new Date(dateString);
-		return new Intl.DateTimeFormat('fr-FR', {
-			dateStyle: 'medium',
-			timeStyle: 'short'
-		}).format(date);
-	}
-
-	function truncateText(text: string, maxLength: number = 100): string {
-		if (text.length <= maxLength) return text;
-		return text.substring(0, maxLength) + '...';
-	}
-
 	// Helper pour créer le gauge SVG du sentiment
 	function getSentimentGaugeRotation(score: number): number {
-		// Score va de -1 à 1, on veut une rotation de 0° à 180°
 		return ((score + 1) / 2) * 180;
 	}
 
@@ -145,18 +103,17 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - Analyseur de Feedback</title>
+	<title>Nouvelle Analyse - Analyseur de Feedback</title>
 </svelte:head>
 
-<div class="dashboard">
-	<header class="dashboard-header">
-		<h1>Tableau de Bord</h1>
+<div class="page">
+	<header class="page-header">
+		<h1>Nouvelle Analyse</h1>
 		<p>Analysez vos feedbacks clients en quelques secondes</p>
 	</header>
 
-	<main class="dashboard-main">
+	<main class="page-main">
 		<section class="analyzer-section">
-			<h2>Nouvelle Analyse</h2>
 			<div class="analyzer-card">
 				<div class="textarea-wrapper">
 					<textarea
@@ -210,159 +167,148 @@
 			</div>
 		</section>
 
-	{#if error}
-		<section class="error-section">
-			<div class="error-card">
-				<h3>❌ Erreur</h3>
-				<p>{error}</p>
-			</div>
-		</section>
-	{/if}
-
-	{#if analysisResult || selectedHistoryItem}
-		{@const displayResult = analysisResult?.analysis || selectedHistoryItem?.result}
-		{@const isFromHistory = !analysisResult && selectedHistoryItem}
-		{@const totalThemes = displayResult.themes.positive.length + displayResult.themes.negative.length}
-		{@const positivePercentage = totalThemes > 0 ? (displayResult.themes.positive.length / totalThemes) * 100 : 50}
-		{@const negativePercentage = totalThemes > 0 ? (displayResult.themes.negative.length / totalThemes) * 100 : 50}
-		<section class="results-section">
-			<h2>📊 Résultats de l'Analyse {#if isFromHistory}<span class="history-badge">Historique</span>{/if}</h2>
-			
-			<!-- Sentiment général -->
-			<div class="sentiment-card" style="border-left-color: {getSentimentColor(displayResult.sentiment)}">
-				<div class="sentiment-header">
-					<h3>Sentiment Général</h3>
-					<span class="sentiment-badge" style="background: {getSentimentColor(displayResult.sentiment)}">
-						{displayResult.sentiment}
-					</span>
+		{#if error}
+			<section class="error-section">
+				<div class="error-card">
+					<h3>❌ Erreur</h3>
+					<p>{error}</p>
 				</div>
+			</section>
+		{/if}
+
+		{#if analysisResult}
+			{@const displayResult = analysisResult.analysis}
+			{@const totalThemes = displayResult.themes.positive.length + displayResult.themes.negative.length}
+			{@const positivePercentage = totalThemes > 0 ? (displayResult.themes.positive.length / totalThemes) * 100 : 50}
+			{@const negativePercentage = totalThemes > 0 ? (displayResult.themes.negative.length / totalThemes) * 100 : 50}
+			<section class="results-section">
+				<h2>📊 Résultats de l'Analyse</h2>
 				
-				<!-- Gauge visuel du sentiment -->
-				<div class="sentiment-gauge-container">
-					<svg class="sentiment-gauge" viewBox="0 0 200 120" width="200" height="120">
-						<!-- Arc de fond (gris) -->
-						<path 
-							d="M 20 100 A 80 80 0 0 1 180 100" 
-							fill="none" 
-							stroke="#e0e0e0" 
-							stroke-width="20" 
-							stroke-linecap="round"
-						/>
-						
-						<!-- Arc coloré basé sur le score -->
-						<path 
-							d="M 20 100 A 80 80 0 0 1 180 100" 
-							fill="none" 
-							stroke="{getSentimentColor(displayResult.sentiment)}" 
-							stroke-width="20" 
-							stroke-linecap="round"
-							stroke-dasharray="{((displayResult.score + 1) / 2) * 251.2} 251.2"
-							style="transition: stroke-dasharray 1s ease;"
-						/>
-						
-						<!-- Aiguille -->
-						<g transform="translate(100, 100) rotate({getSentimentGaugeRotation(displayResult.score) - 90})">
-							<line x1="0" y1="0" x2="70" y2="0" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-							<circle cx="0" cy="0" r="5" fill="#333"/>
-						</g>
-						
-						<!-- Labels -->
-						<text x="15" y="115" font-size="10" fill="#999">-1</text>
-						<text x="93" y="30" font-size="10" fill="#999">0</text>
-						<text x="178" y="115" font-size="10" fill="#999">+1</text>
-					</svg>
-					<div class="sentiment-score">
-						Score: {displayResult.score.toFixed(2)}
+				<!-- Sentiment général -->
+				<div class="sentiment-card" style="border-left-color: {getSentimentColor(displayResult.sentiment)}">
+					<div class="sentiment-header">
+						<h3>Sentiment Général</h3>
+						<span class="sentiment-badge" style="background: {getSentimentColor(displayResult.sentiment)}">
+							{displayResult.sentiment}
+						</span>
 					</div>
+					
+					<!-- Gauge visuel du sentiment -->
+					<div class="sentiment-gauge-container">
+						<svg class="sentiment-gauge" viewBox="0 0 200 120" width="200" height="120">
+							<path 
+								d="M 20 100 A 80 80 0 0 1 180 100" 
+								fill="none" 
+								stroke="#e0e0e0" 
+								stroke-width="20" 
+								stroke-linecap="round"
+							/>
+							<path 
+								d="M 20 100 A 80 80 0 0 1 180 100" 
+								fill="none" 
+								stroke="{getSentimentColor(displayResult.sentiment)}" 
+								stroke-width="20" 
+								stroke-linecap="round"
+								stroke-dasharray="{((displayResult.score + 1) / 2) * 251.2} 251.2"
+								style="transition: stroke-dasharray 1s ease;"
+							/>
+							<g transform="translate(100, 100) rotate({getSentimentGaugeRotation(displayResult.score) - 90})">
+								<line x1="0" y1="0" x2="70" y2="0" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+								<circle cx="0" cy="0" r="5" fill="#333"/>
+							</g>
+							<text x="15" y="115" font-size="10" fill="#999">-1</text>
+							<text x="93" y="30" font-size="10" fill="#999">0</text>
+							<text x="178" y="115" font-size="10" fill="#999">+1</text>
+						</svg>
+						<div class="sentiment-score">
+							Score: {displayResult.score.toFixed(2)}
+						</div>
+					</div>
+					
+					<p class="summary">{displayResult.summary}</p>
 				</div>
-				
-				<p class="summary">{displayResult.summary}</p>
-			</div>
 
-			<!-- Thèmes avec graphique -->
-			<div class="themes-container">
-				<h3>🎯 Distribution des Thèmes</h3>
-				
-				<!-- Graphique de distribution -->
-				<div class="theme-distribution">
-					<div class="distribution-chart">
-						<div class="chart-bar">
-							<div class="bar-segment positive" style="width: {positivePercentage}%">
-								<span class="bar-label">{displayResult.themes.positive.length} positif{displayResult.themes.positive.length > 1 ? 's' : ''}</span>
-							</div>
-							<div class="bar-segment negative" style="width: {negativePercentage}%">
-								<span class="bar-label">{displayResult.themes.negative.length} négatif{displayResult.themes.negative.length > 1 ? 's' : ''}</span>
+				<!-- Thèmes avec graphique -->
+				<div class="themes-container">
+					<h3>🎯 Distribution des Thèmes</h3>
+					
+					<div class="theme-distribution">
+						<div class="distribution-chart">
+							<div class="chart-bar">
+								<div class="bar-segment positive" style="width: {positivePercentage}%">
+									<span class="bar-label">{displayResult.themes.positive.length} positif{displayResult.themes.positive.length > 1 ? 's' : ''}</span>
+								</div>
+								<div class="bar-segment negative" style="width: {negativePercentage}%">
+									<span class="bar-label">{displayResult.themes.negative.length} négatif{displayResult.themes.negative.length > 1 ? 's' : ''}</span>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-				
-				<!-- Thèmes détaillés -->
-				<div class="themes-grid">
-					<div class="theme-card positive">
-						<h4>✅ Points Positifs ({displayResult.themes.positive.length})</h4>
-						{#if displayResult.themes.positive.length > 0}
-							<ul>
-								{#each displayResult.themes.positive as theme}
-									<li>{theme}</li>
-								{/each}
-							</ul>
-						{:else}
-							<p class="empty">Aucun point positif identifié</p>
-						{/if}
-					</div>
+					
+					<div class="themes-grid">
+						<div class="theme-card positive">
+							<h4>✅ Points Positifs ({displayResult.themes.positive.length})</h4>
+							{#if displayResult.themes.positive.length > 0}
+								<ul>
+									{#each displayResult.themes.positive as theme}
+										<li>{theme}</li>
+									{/each}
+								</ul>
+							{:else}
+								<p class="empty">Aucun point positif identifié</p>
+							{/if}
+						</div>
 
-					<div class="theme-card negative">
-						<h4>⚠️ Points Négatifs ({displayResult.themes.negative.length})</h4>
-						{#if displayResult.themes.negative.length > 0}
-							<ul>
-								{#each displayResult.themes.negative as theme}
-									<li>{theme}</li>
-								{/each}
-							</ul>
-						{:else}
-							<p class="empty">Aucun point négatif identifié</p>
-						{/if}
-					</div>
-				</div>
-			</div>
-
-			<!-- Bugs -->
-			{#if displayResult.bugs.length > 0}
-				<div class="bugs-card">
-					<h3>🐛 Bugs Identifiés ({displayResult.bugs.length})</h3>
-					<div class="bugs-list">
-						{#each displayResult.bugs as bug}
-							<div class="bug-item" style="border-left-color: {getSeverityColor(bug.severity)}">
-								<span class="severity-badge" style="background: {getSeverityColor(bug.severity)}">
-									{bug.severity}
-								</span>
-								<p>{bug.description}</p>
-							</div>
-						{/each}
+						<div class="theme-card negative">
+							<h4>⚠️ Points Négatifs ({displayResult.themes.negative.length})</h4>
+							{#if displayResult.themes.negative.length > 0}
+								<ul>
+									{#each displayResult.themes.negative as theme}
+										<li>{theme}</li>
+									{/each}
+								</ul>
+							{:else}
+								<p class="empty">Aucun point négatif identifié</p>
+							{/if}
+						</div>
 					</div>
 				</div>
-			{/if}
 
-			<!-- Feature Requests -->
-			{#if displayResult.featureRequests.length > 0}
-				<div class="features-card">
-					<h3>💡 Demandes de Fonctionnalités ({displayResult.featureRequests.length})</h3>
-					<div class="features-list">
-						{#each displayResult.featureRequests as feature}
-							<div class="feature-item" style="border-left-color: {getSeverityColor(feature.priority)}">
-								<span class="priority-badge" style="background: {getSeverityColor(feature.priority)}">
-									{feature.priority}
-								</span>
-								<p>{feature.description}</p>
-							</div>
-						{/each}
+				<!-- Bugs -->
+				{#if displayResult.bugs.length > 0}
+					<div class="bugs-card">
+						<h3>🐛 Bugs Identifiés ({displayResult.bugs.length})</h3>
+						<div class="bugs-list">
+							{#each displayResult.bugs as bug}
+								<div class="bug-item" style="border-left-color: {getSeverityColor(bug.severity)}">
+									<span class="severity-badge" style="background: {getSeverityColor(bug.severity)}">
+										{bug.severity}
+									</span>
+									<p>{bug.description}</p>
+								</div>
+							{/each}
+						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
 
-			<!-- Métadonnées -->
-			{#if analysisResult}
+				<!-- Feature Requests -->
+				{#if displayResult.featureRequests.length > 0}
+					<div class="features-card">
+						<h3>💡 Demandes de Fonctionnalités ({displayResult.featureRequests.length})</h3>
+						<div class="features-list">
+							{#each displayResult.featureRequests as feature}
+								<div class="feature-item" style="border-left-color: {getSeverityColor(feature.priority)}">
+									<span class="priority-badge" style="background: {getSeverityColor(feature.priority)}">
+										{feature.priority}
+									</span>
+									<p>{feature.description}</p>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Métadonnées -->
 				<div class="metadata-card">
 					<h4>📈 Métadonnées</h4>
 					<div class="metadata-grid">
@@ -384,90 +330,41 @@
 						</div>
 					</div>
 				</div>
-			{:else if selectedHistoryItem}
-				<div class="metadata-card">
-					<h4>📈 Métadonnées</h4>
-					<div class="metadata-grid">
-						<div class="metadata-item">
-							<span class="label">Date d'analyse:</span>
-							<span class="value">{formatDate(selectedHistoryItem.createdAt)}</span>
-						</div>
-						<div class="metadata-item">
-							<span class="label">Feedback original:</span>
-							<span class="value">{truncateText(selectedHistoryItem.feedbackText, 150)}</span>
-						</div>
-					</div>
-				</div>
-			{/if}
-		</section>
-	{/if}
-
-		<section class="history-section">
-			<h2>📋 Historique des Analyses</h2>
-			{#if analyses.length > 0}
-				<div class="history-grid">
-					{#each analyses as analysis}
-						<div class="history-card" on:click={() => viewHistoryItem(analysis)} on:keypress={(e) => e.key === 'Enter' && viewHistoryItem(analysis)} role="button" tabindex="0">
-							<div class="history-header">
-								<span class="history-date">{formatDate(analysis.createdAt)}</span>
-								<span class="sentiment-dot" style="background: {getSentimentColor(analysis.result.sentiment)}" title="{analysis.result.sentiment}"></span>
-							</div>
-							<p class="history-feedback">{truncateText(analysis.feedbackText)}</p>
-							<div class="history-meta">
-								<span class="meta-item">
-									{#if analysis.result.bugs.length > 0}
-										🐛 {analysis.result.bugs.length}
-									{/if}
-								</span>
-								<span class="meta-item">
-									{#if analysis.result.featureRequests.length > 0}
-										💡 {analysis.result.featureRequests.length}
-									{/if}
-								</span>
-							</div>
-						</div>
-					{/each}
-				</div>
-			{:else}
-				<div class="history-placeholder">
-					<p>Aucune analyse pour le moment. Commencez par analyser votre premier feedback !</p>
-				</div>
-			{/if}
-		</section>
+			</section>
+		{/if}
 	</main>
 </div>
 
 <style>
-	.dashboard {
+	/* Réutilisation des styles du dashboard */
+	.page {
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 2rem;
 	}
 
-	.dashboard-header {
+	.page-header {
 		margin-bottom: 3rem;
 	}
 
-	.dashboard-header h1 {
+	.page-header h1 {
 		font-size: 2.5rem;
 		margin-bottom: 0.5rem;
 		color: #333;
 	}
 
-	.dashboard-header p {
+	.page-header p {
 		color: #666;
 		font-size: 1.1rem;
 	}
 
-	.dashboard-main {
+	.page-main {
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
 	}
 
-	.analyzer-section h2,
-	.results-section h2,
-	.history-section h2 {
+	.results-section h2 {
 		font-size: 1.5rem;
 		margin-bottom: 1rem;
 		color: #333;
@@ -515,7 +412,6 @@
 		border-color: #ef4444;
 	}
 
-	/* Character counter */
 	.char-counter {
 		display: flex;
 		justify-content: space-between;
@@ -526,17 +422,9 @@
 		transition: color 0.3s ease;
 	}
 
-	.char-counter.warning {
-		color: #f59e0b;
-	}
-
-	.char-counter.error {
-		color: #ef4444;
-	}
-
-	.char-counter.ok {
-		color: #10b981;
-	}
+	.char-counter.warning { color: #f59e0b; }
+	.char-counter.error { color: #ef4444; }
+	.char-counter.ok { color: #10b981; }
 
 	.count {
 		font-weight: 600;
@@ -548,7 +436,6 @@
 		font-weight: 500;
 	}
 
-	/* Progress bar */
 	.progress-bar {
 		height: 4px;
 		background: #e0e0e0;
@@ -615,17 +502,6 @@
 		to { transform: rotate(360deg); }
 	}
 
-
-	.history-placeholder {
-		background: white;
-		padding: 3rem;
-		border-radius: 12px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		text-align: center;
-		color: #666;
-	}
-
-	/* Error section */
 	.error-section {
 		margin: 2rem 0;
 	}
@@ -648,7 +524,6 @@
 		color: #7f1d1d;
 	}
 
-	/* Sentiment card */
 	.sentiment-card {
 		background: white;
 		padding: 2rem;
@@ -703,7 +578,6 @@
 		line-height: 1.6;
 	}
 
-	/* Themes container */
 	.themes-container {
 		background: white;
 		padding: 2rem;
@@ -717,7 +591,6 @@
 		font-size: 1.5rem;
 	}
 
-	/* Theme distribution chart */
 	.theme-distribution {
 		margin-bottom: 2rem;
 	}
@@ -757,7 +630,6 @@
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 	}
 
-	/* Themes grid */
 	.themes-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -802,7 +674,6 @@
 		font-style: italic;
 	}
 
-	/* Bugs card */
 	.bugs-card {
 		background: white;
 		padding: 2rem;
@@ -847,7 +718,6 @@
 		flex: 1;
 	}
 
-	/* Features card */
 	.features-card {
 		background: white;
 		padding: 2rem;
@@ -892,7 +762,6 @@
 		flex: 1;
 	}
 
-	/* Metadata card */
 	.metadata-card {
 		background: #f8f9fa;
 		padding: 1.5rem;
@@ -926,86 +795,4 @@
 		font-weight: 600;
 		color: #333;
 	}
-
-	/* History section */
-	.history-section {
-		margin-top: 3rem;
-	}
-
-	.history-badge {
-		font-size: 0.75rem;
-		background: #667eea;
-		color: white;
-		padding: 0.25rem 0.75rem;
-		border-radius: 12px;
-		margin-left: 0.5rem;
-		font-weight: 600;
-	}
-
-	.history-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 1.5rem;
-	}
-
-	.history-card {
-		background: white;
-		padding: 1.5rem;
-		border-radius: 12px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		cursor: pointer;
-		transition: all 0.3s ease;
-		border-left: 4px solid #667eea;
-	}
-
-	.history-card:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-	}
-
-	.history-card:focus {
-		outline: 2px solid #667eea;
-		outline-offset: 2px;
-	}
-
-	.history-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 1rem;
-	}
-
-	.history-date {
-		font-size: 0.85rem;
-		color: #666;
-		font-weight: 600;
-	}
-
-	.sentiment-dot {
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		flex-shrink: 0;
-	}
-
-	.history-feedback {
-		color: #333;
-		line-height: 1.5;
-		margin-bottom: 1rem;
-		min-height: 3rem;
-	}
-
-	.history-meta {
-		display: flex;
-		gap: 1rem;
-		font-size: 0.9rem;
-		color: #666;
-	}
-
-	.meta-item {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-	}
 </style>
-

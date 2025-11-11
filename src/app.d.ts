@@ -1,21 +1,11 @@
-// See https://kit.svelte.dev/docs/types#app
-// for information about these interfaces
+// Type definitions for app
 declare global {
 	namespace App {
-		// interface Error {}
 		interface Locals {
-			user: {
-				id: string;
-				email: string;
-				displayName: string;
-				signedUpAt: Date;
-			} | null;
+			user: import('lucia').User | null;
+			session: import('lucia').Session | null;
 		}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
 	}
 }
 
 export {};
-
