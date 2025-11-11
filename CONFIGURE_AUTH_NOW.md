@@ -49,10 +49,7 @@ touch .env
 Ajoutez ces lignes **à la fin** de votre fichier `.env` :
 
 ```env
-# Neon Auth / Stack Auth
-NEXT_PUBLIC_STACK_PROJECT_ID="proj_votre_project_id_ici"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="pk_votre_publishable_key_ici"
-STACK_SECRET_SERVER_KEY="sk_votre_secret_key_ici"
+
 ```
 
 **⚠️ Remplacez :**
@@ -71,15 +68,13 @@ Votre fichier `.env` devrait ressembler à ça :
 
 ```env
 # Base de données Neon
-DATABASE_URL="postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
+
 
 # OpenRouter API
-OPENROUTER_API_KEY="sk-or-v1-xxxxxxxxxxxxxxxx"
+
 
 # Neon Auth / Stack Auth
-NEXT_PUBLIC_STACK_PROJECT_ID="proj_abc123xyz456"
-NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY="pk_test_abc123xyz456"
-STACK_SECRET_SERVER_KEY="sk_secret_abc123xyz456"
+
 ```
 
 ### Sauvegarder le Fichier

@@ -11,8 +11,8 @@
 				<a href="/" class:active={$page.url.pathname === '/'}>Accueil</a>
 				<a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a>
 				<a href="/admin" class:active={$page.url.pathname === '/admin'}>Admin</a>
-				<!-- Stack Auth buttons -->
-				<a href="/handler/sign-in" class="btn-auth">Se connecter</a>
+				<!-- Auth buttons -->
+				<a href="/auth/signin" class="btn-auth">Se connecter</a>
 			</div>
 		</div>
 	</nav>
