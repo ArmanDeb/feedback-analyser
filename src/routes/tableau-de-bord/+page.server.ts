@@ -16,6 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			select: {
 				id: true,
 				feedbackText: true,
+				title: true,
 				result: true,
 				createdAt: true
 			}
@@ -30,6 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			analyses: analyses.map(analysis => ({
 				id: analysis.id,
 				feedbackText: analysis.feedbackText,
+				title: analysis.title,
 				result: analysis.result as unknown as AnalysisResult,
 				createdAt: analysis.createdAt.toISOString()
 			})),

@@ -55,6 +55,7 @@ interface AnalyzeRequest {
 
 // Type pour la réponse de l'IA
 interface AnalysisResult {
+	title?: string;
 	sentiment: 'positive' | 'negative' | 'neutral';
 	score: number;
 	themes: {
@@ -84,6 +85,7 @@ CRITICAL INSTRUCTIONS:
 
 REQUIRED JSON STRUCTURE:
 {
+  "title": "Short descriptive title (max 60 chars) summarizing the feedback origin and main topic",
   "executiveSummary": {
     "keyInsight": "One clear sentence summarizing the main finding",
     "overallSentiment": "positive|negative|neutral",
@@ -177,13 +179,19 @@ RULES:
 - Calculate percentages: (volume / total) * 100
 - All scores and impacts must be between 0 and 10
 
+TITLE GUIDELINES:
+- Create a concise title (max 60 characters) that captures:
+  * The origin/context of the feedback (e.g., "Jeu vidéo", "Application mobile", "Restaurant", "Service client")
+  * The main topic or concern (e.g., "Performance", "Design", "Qualité", "Prix")
+- Examples: "Jeu vidéo - Problème de carte Breeze", "Restaurant - Belle découverte", "App mobile - Connexion Bluetooth instable"
+
 EXAMPLE:
-{"executiveSummary":{"keyInsight":"Users love design but performance is critical issue","overallSentiment":"negative","sentimentScore":3.5,"topFrictionPoints":[{"category":"Performance","issue":"Slow page load","priority":1,"impact":1.5,"quote":"site takes 10 seconds to load","recommendation":"Optimize images and implement CDN"}],"topStrengthPoints":[{"category":"Design","strength":"Modern UI","priority":1,"impact":8.5,"quote":"design is really modern and intuitive"}]},"allThemes":[{"category":"Performance","subtheme":"Speed","specificIssue":"Slow loading","sentiment":"negative","mentionCount":1,"impactScore":1.5,"quotes":["site takes 10 seconds"]}],"driverReport":{"themesByVolume":[{"theme":"Performance","volume":1,"percentage":50.0}],"themesBySentimentImpact":[{"theme":"Performance","sentimentImpact":1.5,"sentiment":"negative"}]},"rootCauseAnalyses":[{"frictionPoint":"Performance","subthemes":[{"name":"Loading time","specificCauses":["Large images"],"quotes":["takes 10 seconds"]}]}],"actionableInsights":[{"frictionPoint":"Slow loading","recommendation":"Optimize assets","priority":"high"}],"sentiment":"negative","score":3.5,"themes":{"positive":["design"],"negative":["performance"]},"bugs":[{"description":"slow load","severity":"high"}],"featureRequests":[],"summary":"Good design but slow performance"}
+{"title":"App web - Design moderne mais performance lente","executiveSummary":{"keyInsight":"Users love design but performance is critical issue","overallSentiment":"negative","sentimentScore":3.5,"topFrictionPoints":[{"category":"Performance","issue":"Slow page load","priority":1,"impact":1.5,"quote":"site takes 10 seconds to load","recommendation":"Optimize images and implement CDN"}],"topStrengthPoints":[{"category":"Design","strength":"Modern UI","priority":1,"impact":8.5,"quote":"design is really modern and intuitive"}]},"allThemes":[{"category":"Performance","subtheme":"Speed","specificIssue":"Slow loading","sentiment":"negative","mentionCount":1,"impactScore":1.5,"quotes":["site takes 10 seconds"]}],"driverReport":{"themesByVolume":[{"theme":"Performance","volume":1,"percentage":50.0}],"themesBySentimentImpact":[{"theme":"Performance","sentimentImpact":1.5,"sentiment":"negative"}]},"rootCauseAnalyses":[{"frictionPoint":"Performance","subthemes":[{"name":"Loading time","specificCauses":["Large images"],"quotes":["takes 10 seconds"]}]}],"actionableInsights":[{"frictionPoint":"Slow loading","recommendation":"Optimize assets","priority":"high"}],"sentiment":"negative","score":3.5,"themes":{"positive":["design"],"negative":["performance"]},"bugs":[{"description":"slow load","severity":"high"}],"featureRequests":[],"summary":"Good design but slow performance"}
 
 NOW ANALYZE AND RETURN JSON ONLY:`;
 
 export const POST: RequestHandler = async (event) => {
-	const { request } = event;
+	const { request, locals } = event;
 	try {
 		// 1. Valider la requête
 		const body = await request.json() as AnalyzeRequest;
@@ -199,9 +207,11 @@ export const POST: RequestHandler = async (event) => {
 			);
 		}
 
-		if (feedbackText.length > 5000) {
+		// Vérifier la limite uniquement si l'utilisateur n'est pas connecté
+		// Les utilisateurs connectés n'ont pas de limite
+		if (!locals.user && feedbackText.length > 5000) {
 			return json(
-				{ error: 'Le feedback est trop long (maximum 5000 caractères)' },
+				{ error: 'Le feedback est trop long (maximum 5000 caractères). Connectez-vous pour analyser des feedbacks plus longs.' },
 				{ status: 400 }
 			);
 		}
@@ -602,11 +612,26 @@ export const POST: RequestHandler = async (event) => {
 			result.metadata.tokensOut
 		);
 			
+			// Extraire le titre de l'analyse ou générer un titre de fallback
+			let title = analysisResult.title;
+			if (!title || title.trim() === '') {
+				// Générer un titre de fallback basé sur le contenu
+				const firstWords = feedbackText.substring(0, 50).trim();
+				const sentiment = analysisResult.sentiment || 'neutral';
+				const sentimentLabel = sentiment === 'positive' ? 'Positif' : sentiment === 'negative' ? 'Négatif' : 'Neutre';
+				title = `${sentimentLabel} - ${firstWords}${feedbackText.length > 50 ? '...' : ''}`;
+				// Limiter à 60 caractères
+				if (title.length > 60) {
+					title = title.substring(0, 57) + '...';
+				}
+			}
+
 			// Sauvegarder l'analyse
 			await prisma.analysis.create({
 				data: {
 					userId: userId,
 					feedbackText: feedbackText,
+					title: title,
 					result: analysisResult as any
 				}
 			});

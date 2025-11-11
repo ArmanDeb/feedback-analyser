@@ -12,17 +12,17 @@ datasource db {
 
 // Table des utilisateurs (Lucia Auth)
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id             String   @id @default(cuid())
+  email          String   @unique
   hashedPassword String
-  role          String    @default("user") // "user" ou "admin"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role           String   @default("user") // "user" ou "admin"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  sessions  Session[]
-  analyses  Analysis[]
-  apiLogs   ApiLog[]
+  sessions Session[]
+  analyses Analysis[]
+  apiLogs  ApiLog[]
 }
 
 // Table des sessions Lucia
@@ -30,45 +30,45 @@ model Session {
   id        String   @id
   userId    String
   expiresAt DateTime
-  
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  
+
+  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+
   @@index([userId])
 }
 
 // Table des analyses de feedback
 model Analysis {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Contenu
-  feedbackText String   @db.Text // Le feedback brut collé par l'utilisateur
-  result       Json     // Le JSON structuré retourné par l'IA
-  
+  feedbackText String  @db.Text // Le feedback brut collé par l'utilisateur
+  title        String? // Titre généré par l'IA résumant le feedback
+  result       Json // Le JSON structuré retourné par l'IA
+
   // Métadonnées
-  createdAt   DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   @@index([userId])
   @@index([createdAt])
 }
 
 // Table des logs API (pour monitoring des coûts - Épopée S3)
 model ApiLog {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Détails de l'appel
-  modelUsed  String   // Ex: "mistralai/mistral-7b-instruct"
-  tokensIn   Int      // Tokens d'entrée (prompt)
-  tokensOut  Int      // Tokens de sortie (réponse)
-  cost       Float    // Coût en dollars ($)
-  
+  modelUsed String // Ex: "mistralai/mistral-7b-instruct"
+  tokensIn  Int // Tokens d'entrée (prompt)
+  tokensOut Int // Tokens de sortie (réponse)
+  cost      Float // Coût en dollars ($)
+
   // Métadonnées
-  timestamp  DateTime @default(now())
-  
+  timestamp DateTime @default(now())
+
   @@index([userId])
   @@index([timestamp])
 }
-

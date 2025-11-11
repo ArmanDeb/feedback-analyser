@@ -63,6 +63,9 @@ export interface RootCauseAnalysis {
 
 // Résultat d'analyse de feedback (version enrichie)
 export interface AnalysisResult {
+	// Titre généré par l'IA
+	title?: string;
+	
 	// Synthèse managériale
 	executiveSummary: ExecutiveSummary;
 	
@@ -130,6 +133,7 @@ export interface ApiError {
 export interface SavedAnalysis {
 	id: string;
 	feedbackText: string;
+	title?: string | null;
 	result: AnalysisResult;
 	createdAt: string;
 }

@@ -26,116 +26,192 @@
 	<title>Mon Utilisation - Analyseur de Feedback</title>
 </svelte:head>
 
-<div class="user-usage-dashboard">
-	<header class="dashboard-header">
-		<h1>📊 Mon Utilisation</h1>
-		<p>Statistiques et coûts de votre compte</p>
-		<div class="user-info">
-			Compte: <strong>{data.currentUser.email}</strong>
+<div class="min-h-screen" style="background: var(--bg-page);">
+	<div class="max-w-7xl mx-auto px-6 py-8">
+		<header class="mb-8 pb-4 border-b-2" style="border-color: var(--border-subtle);">
+			<h1 class="text-4xl mb-2 flex items-center gap-3" style="color: var(--text-primary);">
+				<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<path d="M3 3v18h18V3H3zm16 16H5V5h14v14z" fill="url(#headerGradient)"/>
+				<path d="M7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="url(#headerGradient)"/>
+			</svg>
+			Mon Utilisation
+		</h1>
+		<p class="mb-4" style="color: var(--text-secondary);">Statistiques et coûts de votre compte</p>
+		<div class="text-sm" style="color: var(--text-secondary);">
+			Compte: <strong style="color: var(--text-primary); font-weight: var(--font-weight-semibold);">{data.currentUser.email}</strong>
 		</div>
 	</header>
 
 	{#if hasDbError}
-		<div class="error-banner">
-			<h2>⚠️ Configuration Requise</h2>
+		<div class="p-6 mb-8 rounded-sm border-2" style="background: var(--color-error-light); border-color: var(--color-error);">
+			<h2 class="flex items-center mb-2" style="color: var(--color-error);">
+				<svg class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<linearGradient id="errorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+						</linearGradient>
+					</defs>
+					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="url(#errorGradient)"/>
+				</svg>
+				Configuration Requise
+			</h2>
 			<p>{data.error}</p>
-			<div class="error-instructions">
+			<div class="mt-4" style="color: var(--text-secondary);">
 				<p>La base de données n'est pas encore configurée. Contactez l'administrateur.</p>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Statistiques Personnelles -->
-	<section class="stats-grid">
-		<div class="stat-card">
-			<div class="stat-icon">📊</div>
-			<div class="stat-content">
-				<div class="stat-label">Mes Analyses</div>
-				<div class="stat-value">{formatNumber(data.userStats.totalAnalyses)}</div>
+	<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+		<div class="flex items-center gap-6 p-6 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+			<svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<path d="M3 3v18h18V3H3zm16 16H5V5h14v14z" fill="url(#chartGradient)"/>
+				<path d="M7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="url(#chartGradient)"/>
+			</svg>
+			<div class="flex-1">
+				<div class="text-sm font-medium mb-1" style="color: var(--text-secondary);">Mes Analyses</div>
+				<div class="text-4xl font-bold" style="color: var(--text-primary);">{formatNumber(data.userStats.totalAnalyses)}</div>
 			</div>
 		</div>
 
-		<div class="stat-card">
-			<div class="stat-icon">🤖</div>
-			<div class="stat-content">
-				<div class="stat-label">Appels API</div>
-				<div class="stat-value">{formatNumber(data.userStats.totalApiCalls)}</div>
+		<div class="flex items-center gap-6 p-6 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+			<svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="apiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="url(#apiGradient)"/>
+			</svg>
+			<div class="flex-1">
+				<div class="text-sm font-medium mb-1" style="color: var(--text-secondary);">Appels API</div>
+				<div class="text-4xl font-bold" style="color: var(--text-primary);">{formatNumber(data.userStats.totalApiCalls)}</div>
 			</div>
 		</div>
 
-		<div class="stat-card cost-card">
-			<div class="stat-icon">💰</div>
-			<div class="stat-content">
-				<div class="stat-label">Coût Total</div>
-				<div class="stat-value">{formatCost(data.userStats.totalCost)}</div>
+		<div class="flex items-center gap-6 p-6 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--text-primary); color: var(--bg-widget); border: 1px solid var(--border-subtle);">
+			<svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--bg-widget);">
+				<defs>
+					<linearGradient id="costGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="url(#costGradient)"/>
+			</svg>
+			<div class="flex-1">
+				<div class="text-sm font-medium mb-1">Coût Total</div>
+				<div class="text-4xl font-bold">{formatCost(data.userStats.totalCost)}</div>
 			</div>
 		</div>
 
-		<div class="stat-card">
-			<div class="stat-icon">🔤</div>
-			<div class="stat-content">
-				<div class="stat-label">Tokens Utilisés</div>
-				<div class="stat-value">{formatNumber(data.userStats.totalTokens)}</div>
-				<div class="stat-details">
-					<span class="detail-item">
-						↑ In: {formatNumber(data.userStats.totalTokensIn)}
-					</span>
-					<span class="detail-item">
-						↓ Out: {formatNumber(data.userStats.totalTokensOut)}
-					</span>
+		<div class="flex items-center gap-6 p-6 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+			<svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="tokenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" fill="url(#tokenGradient)"/>
+			</svg>
+			<div class="flex-1">
+				<div class="text-sm font-medium mb-1" style="color: var(--text-secondary);">Tokens Utilisés</div>
+				<div class="text-4xl font-bold mb-2" style="color: var(--text-primary);">{formatNumber(data.userStats.totalTokens)}</div>
+				<div class="flex gap-4 text-xs" style="color: var(--text-secondary);">
+					<span>↑ In: {formatNumber(data.userStats.totalTokensIn)}</span>
+					<span>↓ Out: {formatNumber(data.userStats.totalTokensOut)}</span>
 				</div>
 			</div>
 		</div>
 	</section>
 
 	<!-- Estimation Mensuelle -->
-	<section class="cost-projection">
-		<h2>📈 Estimation Mensuelle</h2>
-		<div class="projection-grid">
-			<div class="projection-card">
-				<div class="projection-label">Coût 7 derniers jours</div>
-				<div class="projection-value">{formatCost(data.monthlyCostEstimate.weekCost)}</div>
+	<section class="mb-8">
+		<h2 class="text-2xl font-semibold mb-6 flex items-center gap-3" style="color: var(--text-primary);">
+			<svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="projectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" fill="url(#projectionGradient)"/>
+			</svg>
+			Estimation Mensuelle
+		</h2>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+			<div class="p-6 rounded-lg" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+				<div class="text-sm font-medium mb-2" style="color: var(--text-secondary);">Coût 7 derniers jours</div>
+				<div class="text-3xl font-bold" style="color: var(--text-primary);">{formatCost(data.monthlyCostEstimate.weekCost)}</div>
 			</div>
-			<div class="projection-card">
-				<div class="projection-label">Moyenne Quotidienne</div>
-				<div class="projection-value">{formatCost(data.monthlyCostEstimate.dailyAverage)}</div>
+			<div class="p-6 rounded-lg" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+				<div class="text-sm font-medium mb-2" style="color: var(--text-secondary);">Moyenne Quotidienne</div>
+				<div class="text-3xl font-bold" style="color: var(--text-primary);">{formatCost(data.monthlyCostEstimate.dailyAverage)}</div>
 			</div>
-			<div class="projection-card highlight">
-				<div class="projection-label">Estimation Mensuelle</div>
-				<div class="projection-value">{formatCost(data.monthlyCostEstimate.estimatedMonthlyCost)}</div>
-				<div class="projection-note">Basée sur l'activité des 7 derniers jours</div>
+			<div class="p-6 rounded-lg" style="background: var(--text-primary); color: var(--bg-widget); border: 1px solid var(--border-subtle);">
+				<div class="text-sm font-medium mb-2">Estimation Mensuelle</div>
+				<div class="text-3xl font-bold mb-2">{formatCost(data.monthlyCostEstimate.estimatedMonthlyCost)}</div>
+				<div class="text-xs opacity-90">Basée sur l'activité des 7 derniers jours</div>
 			</div>
 		</div>
 	</section>
 
 	<!-- Historique des Appels API -->
-	<section class="api-logs">
-		<h2>🔍 Historique des Appels API</h2>
+	<section class="mb-8">
+		<h2 class="text-2xl font-semibold mb-6 flex items-center gap-3" style="color: var(--text-primary);">
+			<svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<linearGradient id="searchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+						<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+					</linearGradient>
+				</defs>
+				<circle cx="11" cy="11" r="7" stroke="url(#searchGradient)" stroke-width="2" fill="none"/>
+				<path d="m20 20-4.35-4.35" stroke="url(#searchGradient)" stroke-width="2" stroke-linecap="round"/>
+			</svg>
+			Historique des Appels API
+		</h2>
 		{#if data.recentLogs.length === 0}
-			<div class="empty-state">
-				<p>Aucun appel API enregistré pour le moment.</p>
-				<p>Créez votre première analyse pour voir les statistiques ici.</p>
+			<div class="p-16 rounded-lg text-center" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+				<p class="mb-2" style="color: var(--text-secondary);">Aucun appel API enregistré pour le moment.</p>
+				<p style="color: var(--text-secondary);">Créez votre première analyse pour voir les statistiques ici.</p>
 			</div>
 		{:else}
-			<div class="logs-table-container">
-				<table class="logs-table">
+			<div class="overflow-x-auto rounded-lg" style="background: var(--bg-widget); border: 1px solid var(--border-subtle);">
+				<table class="w-full">
 					<thead>
-						<tr>
-							<th>Date & Heure</th>
-							<th>Modèle</th>
-							<th>Tokens In</th>
-							<th>Tokens Out</th>
-							<th>Coût</th>
+						<tr class="border-b" style="border-color: var(--border-subtle);">
+							<th class="px-6 py-4 text-left text-sm font-semibold" style="color: var(--text-primary);">Date & Heure</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold" style="color: var(--text-primary);">Modèle</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold" style="color: var(--text-primary);">Tokens In</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold" style="color: var(--text-primary);">Tokens Out</th>
+							<th class="px-6 py-4 text-left text-sm font-semibold" style="color: var(--text-primary);">Coût</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each data.recentLogs as log}
-							<tr>
-								<td>{formatDate(log.timestamp)}</td>
-								<td class="model-name">{log.modelUsed}</td>
-								<td>{formatNumber(log.tokensIn)}</td>
-								<td>{formatNumber(log.tokensOut)}</td>
-								<td class="cost-cell">{formatCost(log.cost)}</td>
+							<tr class="border-b" style="border-color: var(--border-subtle);">
+								<td class="px-6 py-4 text-sm" style="color: var(--text-secondary);">{formatDate(log.timestamp)}</td>
+								<td class="px-6 py-4 text-sm font-mono font-medium" style="color: var(--text-primary);">{log.modelUsed}</td>
+								<td class="px-6 py-4 text-sm" style="color: var(--text-secondary);">{formatNumber(log.tokensIn)}</td>
+								<td class="px-6 py-4 text-sm" style="color: var(--text-secondary);">{formatNumber(log.tokensOut)}</td>
+								<td class="px-6 py-4 text-sm font-semibold" style="color: var(--text-primary);">{formatCost(log.cost)}</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -145,309 +221,37 @@
 	</section>
 
 	<!-- Actions Rapides -->
-	<section class="quick-actions">
-		<h2>Actions Rapides</h2>
-		<div class="actions-grid">
-			<a href="/nouvelle-analyse" class="action-btn primary">
-				<span class="action-icon">✨</span>
-				<span class="action-label">Nouvelle Analyse</span>
+	<section class="mb-8">
+		<h2 class="text-2xl font-semibold mb-6" style="color: var(--text-primary);">Actions Rapides</h2>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<a href="/nouvelle-analyse" class="flex items-center gap-4 p-6 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5 no-underline" style="background: var(--text-primary); color: var(--bg-widget);">
+				<svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--bg-widget);">
+					<defs>
+						<linearGradient id="newGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:1" />
+						</linearGradient>
+					</defs>
+					<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="url(#newGradient)"/>
+				</svg>
+				<span class="text-lg font-semibold">Nouvelle Analyse</span>
 			</a>
-			<a href="/tableau-de-bord" class="action-btn">
-				<span class="action-icon">📊</span>
-				<span class="action-label">Mes Analyses</span>
+			<a href="/tableau-de-bord" class="flex items-center gap-4 p-6 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5 no-underline" style="background: var(--bg-widget); color: var(--text-primary); border: 1px solid var(--border-subtle);">
+				<svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--text-primary);">
+					<defs>
+						<linearGradient id="dashboardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+							<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+						</linearGradient>
+					</defs>
+					<path d="M3 3v18h18V3H3zm16 16H5V5h14v14z" fill="url(#dashboardGradient)"/>
+					<path d="M7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="url(#dashboardGradient)"/>
+				</svg>
+				<span class="text-lg font-semibold">Mes Analyses</span>
 			</a>
 		</div>
 	</section>
+	</div>
 </div>
 
-<style>
-	.user-usage-dashboard {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 2rem;
-	}
-
-	.dashboard-header {
-		margin-bottom: 2rem;
-		padding-bottom: 1rem;
-		border-bottom: 2px solid #e0e0e0;
-	}
-
-	.dashboard-header h1 {
-		font-size: 2rem;
-		margin-bottom: 0.5rem;
-		color: #333;
-	}
-
-	.dashboard-header p {
-		color: #666;
-		margin-bottom: 1rem;
-	}
-
-	.user-info {
-		color: #666;
-		font-size: 0.9rem;
-	}
-
-	.user-info strong {
-		color: #667eea;
-	}
-
-	/* Error Banner */
-	.error-banner {
-		background: #fee;
-		border: 2px solid #fcc;
-		border-radius: 8px;
-		padding: 1.5rem;
-		margin-bottom: 2rem;
-	}
-
-	.error-banner h2 {
-		color: #c00;
-		margin-bottom: 0.5rem;
-	}
-
-	.error-instructions {
-		margin-top: 1rem;
-		color: #666;
-	}
-
-	/* Stats Grid */
-	.stats-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		gap: 1.5rem;
-		margin-bottom: 2rem;
-	}
-
-	.stat-card {
-		background: white;
-		border-radius: 12px;
-		padding: 1.5rem;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
-	}
-
-	.stat-card:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-	}
-
-	.stat-card.cost-card {
-		border-left: 4px solid #f59e0b;
-	}
-
-	.stat-icon {
-		font-size: 2.5rem;
-	}
-
-	.stat-content {
-		flex: 1;
-	}
-
-	.stat-label {
-		font-size: 0.9rem;
-		color: #666;
-		margin-bottom: 0.25rem;
-	}
-
-	.stat-value {
-		font-size: 2rem;
-		font-weight: 700;
-		color: #333;
-	}
-
-	.stat-details {
-		display: flex;
-		gap: 1rem;
-		margin-top: 0.5rem;
-		font-size: 0.85rem;
-		color: #666;
-	}
-
-	/* Cost Projection */
-	.cost-projection {
-		background: white;
-		border-radius: 12px;
-		padding: 2rem;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		margin-bottom: 2rem;
-	}
-
-	.cost-projection h2 {
-		margin-bottom: 1.5rem;
-		color: #333;
-	}
-
-	.projection-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1rem;
-	}
-
-	.projection-card {
-		background: #f8f9fa;
-		border-radius: 8px;
-		padding: 1.5rem;
-		text-align: center;
-	}
-
-	.projection-card.highlight {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-	}
-
-	.projection-label {
-		font-size: 0.85rem;
-		opacity: 0.8;
-		margin-bottom: 0.5rem;
-	}
-
-	.projection-value {
-		font-size: 1.8rem;
-		font-weight: 700;
-		margin-bottom: 0.25rem;
-	}
-
-	.projection-note {
-		font-size: 0.75rem;
-		opacity: 0.8;
-		margin-top: 0.5rem;
-	}
-
-	/* API Logs */
-	.api-logs {
-		background: white;
-		border-radius: 12px;
-		padding: 2rem;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		margin-bottom: 2rem;
-	}
-
-	.api-logs h2 {
-		margin-bottom: 1.5rem;
-		color: #333;
-	}
-
-	.empty-state {
-		text-align: center;
-		padding: 3rem;
-		color: #666;
-	}
-
-	.logs-table-container {
-		overflow-x: auto;
-	}
-
-	.logs-table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.logs-table thead {
-		background: #f8f9fa;
-	}
-
-	.logs-table th {
-		padding: 0.75rem;
-		text-align: left;
-		font-weight: 600;
-		color: #666;
-		border-bottom: 2px solid #e0e0e0;
-	}
-
-	.logs-table td {
-		padding: 0.75rem;
-		border-bottom: 1px solid #f0f0f0;
-	}
-
-	.logs-table tbody tr:hover {
-		background: #f8f9fa;
-	}
-
-	.model-name {
-		font-family: 'Monaco', 'Courier New', monospace;
-		font-size: 0.85rem;
-		color: #667eea;
-	}
-
-	.cost-cell {
-		font-weight: 600;
-		color: #f59e0b;
-	}
-
-	/* Quick Actions */
-	.quick-actions {
-		background: white;
-		border-radius: 12px;
-		padding: 2rem;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.quick-actions h2 {
-		margin-bottom: 1.5rem;
-		color: #333;
-	}
-
-	.actions-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1rem;
-	}
-
-	.action-btn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.75rem;
-		padding: 1rem 1.5rem;
-		border-radius: 8px;
-		text-decoration: none;
-		font-weight: 600;
-		transition: all 0.3s ease;
-		border: 2px solid #e0e0e0;
-		color: #333;
-	}
-
-	.action-btn:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	}
-
-	.action-btn.primary {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-		border-color: transparent;
-	}
-
-	.action-icon {
-		font-size: 1.5rem;
-	}
-
-	@media (max-width: 768px) {
-		.user-usage-dashboard {
-			padding: 1rem;
-		}
-
-		.stats-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.projection-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.logs-table {
-			font-size: 0.85rem;
-		}
-
-		.logs-table th,
-		.logs-table td {
-			padding: 0.5rem;
-		}
-	}
-</style>
 

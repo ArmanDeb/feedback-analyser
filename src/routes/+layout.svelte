@@ -1,6 +1,7 @@
 <script lang="ts">
 	// Layout global de l'application
 	import { page } from '$app/stores';
+	import '../app.css';
 	
 	// L'utilisateur est disponible via page.data depuis hooks.server.ts
 	$: user = $page.data.user;
@@ -10,19 +11,16 @@
 	let isMenuOpen = false;
 	
 	function toggleMenu() {
-		console.log('🔄 Toggle menu:', !isMenuOpen);
 		isMenuOpen = !isMenuOpen;
 	}
 	
 	function closeMenu() {
-		console.log('📋 Fermeture du menu');
 		isMenuOpen = false;
 	}
 	
 	function handleSignOut(e?: MouseEvent) {
 		e?.preventDefault();
 		e?.stopPropagation();
-		console.log('🔓 Déconnexion en cours...');
 		isMenuOpen = false;
 		// Créer un formulaire invisible pour gérer la déconnexion
 		const form = document.createElement('form');
@@ -33,160 +31,368 @@
 	}
 </script>
 
-<div class="app">
-	<nav class="navbar">
-		<div class="nav-content">
-			<a href="/" class="logo">📊 Feedback Analyser</a>
-			<div class="nav-links">
-				{#if !isAuthenticated}
-					<!-- Navigation Visiteur -->
+{#if isAuthenticated}
+	<!-- Dashboard Layout avec Sidebar -->
+	<div class="dashboard-layout">
+		<!-- Sidebar Fixe -->
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<a href="/" class="logo">
+					<span class="logo-text">Feedback Analyser</span>
+				</a>
+			</div>
+			
+			<nav class="sidebar-nav">
+				<a 
+					href="/tableau-de-bord" 
+					class="nav-item"
+					class:active={$page.url.pathname === '/tableau-de-bord'}
+				>
+					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<defs>
+							<linearGradient id="navDashboardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+								<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+							</linearGradient>
+						</defs>
+						<path d="M3 3v18h18V3H3zm16 16H5V5h14v14z" fill="url(#navDashboardGradient)"/>
+						<path d="M7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="url(#navDashboardGradient)"/>
+					</svg>
+					<span class="nav-label">Tableau de Bord</span>
+				</a>
+				<a 
+					href="/nouvelle-analyse" 
+					class="nav-item"
+					class:active={$page.url.pathname === '/nouvelle-analyse'}
+				>
+					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<defs>
+							<linearGradient id="navNewAnalysisGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+								<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+							</linearGradient>
+						</defs>
+						<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="url(#navNewAnalysisGradient)"/>
+					</svg>
+					<span class="nav-label">Nouvelle Analyse</span>
+				</a>
+				<a 
+					href="/compte/utilisation" 
+					class="nav-item"
+					class:active={$page.url.pathname === '/compte/utilisation'}
+				>
+					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<defs>
+							<linearGradient id="navUsageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+								<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+							</linearGradient>
+						</defs>
+						<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" fill="url(#navUsageGradient)"/>
+					</svg>
+					<span class="nav-label">Mon Utilisation</span>
+				</a>
+				{#if isAdmin}
+					<a 
+						href="/dashboard-admin" 
+						class="nav-item admin-nav"
+						class:active={$page.url.pathname === '/dashboard-admin'}
+					>
+						<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<linearGradient id="navAdminGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+									<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
+									<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+								</linearGradient>
+							</defs>
+							<path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="url(#navAdminGradient)"/>
+						</svg>
+						<span class="nav-label">Admin</span>
+					</a>
+				{/if}
+			</nav>
+			
+			<div class="sidebar-footer">
+				<div class="user-profile">
+					<div class="user-avatar">
+						{user?.email?.[0]?.toUpperCase() || 'U'}
+					</div>
+					<div class="user-info">
+						<div class="user-email">{user?.email || 'Utilisateur'}</div>
+						<div class="user-role">{isAdmin ? 'Administrateur' : 'Utilisateur'}</div>
+					</div>
+				</div>
+				<button class="sign-out-button" on:click={handleSignOut}>
+					<span class="sign-out-label">Déconnexion</span>
+				</button>
+			</div>
+		</aside>
+		
+		<!-- Zone de Contenu Principale -->
+		<main class="main-content">
+			<slot />
+		</main>
+	</div>
+{:else}
+	<!-- Layout Public avec Navbar -->
+	<div class="public-layout">
+		<nav class="navbar">
+			<div class="nav-content">
+				<a href="/" class="logo">Feedback Analyser</a>
+				<div class="nav-links">
 					<a href="/" class:active={$page.url.pathname === '/'}>Accueil</a>
 					<a href="/essayer" class:active={$page.url.pathname === '/essayer'}>Essayer</a>
 					<a href="/auth/signup" class="btn-auth-secondary">S'inscrire</a>
 					<a href="/auth/signin" class="btn-auth">Se connecter</a>
-				{:else}
-					<!-- Navigation Utilisateur Authentifié -->
-					<a href="/tableau-de-bord" class:active={$page.url.pathname === '/tableau-de-bord'}>Tableau de Bord</a>
-					<a href="/nouvelle-analyse" class:active={$page.url.pathname === '/nouvelle-analyse'}>Nouvelle Analyse</a>
-					
-					<!-- Menu Profil -->
-					<div class="profile-menu">
-						<button class="profile-button" on:click={toggleMenu} aria-label="Menu profil">
-							<span class="profile-icon">👤</span>
-							<span class="profile-email">{user?.email || 'Profil'}</span>
-							<span class="dropdown-arrow">▼</span>
-						</button>
-						
-						{#if isMenuOpen}
-							<div 
-								class="dropdown-menu" 
-								role="menu"
-								tabindex="-1"
-								on:click|stopPropagation
-								on:keydown={(e) => e.key === 'Escape' && closeMenu()}
-							>
-								<a 
-									href="/compte/utilisation" 
-									role="menuitem"
-									on:click={() => { 
-										console.log('📊 Clic sur Mon Utilisation'); 
-										closeMenu(); 
-									}}
-								>
-									Mon Utilisation
-								</a>
-								{#if isAdmin}
-									<a 
-										href="/dashboard-admin"
-										role="menuitem"
-										on:click={() => { 
-											console.log('👑 Clic sur Admin'); 
-											closeMenu(); 
-										}}
-										class="admin-link"
-									>
-										Admin
-									</a>
-								{/if}
-								<button 
-									class="sign-out-btn" 
-									type="button"
-									role="menuitem"
-									on:click={(e) => {
-										console.log('👋 Clic sur Se déconnecter');
-										handleSignOut(e);
-									}}
-								>
-									Se déconnecter
-								</button>
-							</div>
-						{/if}
-					</div>
-				{/if}
+				</div>
 			</div>
-		</div>
-	</nav>
-
-	<main>
-		<slot />
-	</main>
-</div>
-
-<!-- Overlay pour fermer le menu -->
-{#if isMenuOpen}
-	<div class="overlay" on:click={closeMenu} on:keypress={(e) => e.key === 'Escape' && closeMenu()} role="button" tabindex="-1"></div>
+		</nav>
+		
+		<main class="public-main">
+			<slot />
+		</main>
+	</div>
 {/if}
 
 <style>
-	:global(body) {
-		margin: 0;
-		padding: 0;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-		background-color: #f5f7fa;
-		color: #333;
+	/* === Dashboard Layout === */
+	.dashboard-layout {
+		display: flex;
+		min-height: 100vh;
+		background: var(--bg-page);
 	}
 
-	:global(*) {
-		box-sizing: border-box;
+	/* === Sidebar === */
+	.sidebar {
+		width: 280px;
+		background: var(--bg-sidebar);
+		display: flex;
+		flex-direction: column;
+		position: fixed;
+		height: 100vh;
+		left: 0;
+		top: 0;
+		z-index: var(--z-sidebar);
+		box-shadow: var(--shadow-medium);
+		border-right: 1px solid var(--border-subtle);
 	}
 
-	.app {
+	.sidebar-header {
+		padding: var(--spacing-6);
+		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	.logo {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		font-weight: var(--font-weight-bold);
+		font-size: var(--font-size-xl);
+		color: var(--text-primary);
+		text-decoration: none;
+		transition: opacity var(--transition-fast);
+	}
+
+	.logo:hover {
+		opacity: 0.8;
+	}
+
+	.logo-text {
+		font-weight: var(--font-weight-bold);
+	}
+
+	.sidebar-nav {
+		flex: 1;
+		padding: var(--spacing-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-2);
+		overflow-y: auto;
+	}
+
+	.nav-item {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		padding: var(--spacing-4) var(--spacing-5);
+		border-radius: var(--radius-md);
+		color: var(--text-primary);
+		font-weight: var(--font-weight-medium);
+		font-size: var(--font-size-base);
+		transition: all var(--transition-base);
+		position: relative;
+	}
+
+	.nav-icon {
+		width: 20px;
+		height: 20px;
+		flex-shrink: 0;
+	}
+
+	.nav-item:hover {
+		background: var(--bg-widget);
+		color: var(--text-primary);
+	}
+
+	.nav-item.active {
+		background: var(--bg-widget);
+		color: var(--text-primary);
+		font-weight: var(--font-weight-semibold);
+		box-shadow: var(--shadow-soft);
+		border-left: 3px solid var(--text-primary);
+	}
+
+	.nav-item.active::before {
+		display: none;
+	}
+
+	.nav-label {
+		flex: 1;
+	}
+
+	.admin-nav {
+		margin-top: var(--spacing-4);
+		border-top: 1px solid var(--border-subtle);
+		padding-top: var(--spacing-4);
+	}
+
+	.sidebar-footer {
+		padding: var(--spacing-6);
+		border-top: 1px solid var(--border-subtle);
+		background: var(--bg-widget);
+	}
+
+	.user-profile {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		margin-bottom: var(--spacing-4);
+		padding: var(--spacing-4);
+		background: var(--bg-widget);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.user-avatar {
+		width: 48px;
+		height: 48px;
+		border-radius: var(--radius-full);
+		background: var(--text-primary);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: var(--font-weight-bold);
+		font-size: var(--font-size-lg);
+		color: var(--bg-widget);
+		border: 2px solid var(--border-subtle);
+		flex-shrink: 0;
+	}
+
+	.user-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.user-email {
+		font-weight: var(--font-weight-semibold);
+		font-size: var(--font-size-sm);
+		color: var(--text-primary);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.user-role {
+		font-size: var(--font-size-xs);
+		color: var(--text-secondary);
+		margin-top: var(--spacing-1);
+	}
+
+	.sign-out-button {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--spacing-2);
+		padding: var(--spacing-3) var(--spacing-4);
+		background: var(--bg-widget);
+		border-radius: var(--radius-md);
+		color: var(--text-secondary);
+		font-weight: var(--font-weight-medium);
+		font-size: var(--font-size-sm);
+		transition: all var(--transition-base);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.sign-out-button:hover {
+		background: rgba(239, 68, 68, 0.1);
+		color: #ef4444;
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-medium);
+	}
+
+
+	/* === Main Content Area === */
+	.main-content {
+		flex: 1;
+		margin-left: 280px;
+		padding: var(--spacing-8);
+		min-height: 100vh;
+		overflow-x: hidden;
+	}
+
+	/* === Public Layout === */
+	.public-layout {
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
 	}
 
 	.navbar {
-		background: white;
-		border-bottom: 1px solid #e0e0e0;
-		padding: 1rem 0;
+		background: var(--bg-widget);
+		border-bottom: 1px solid var(--border-subtle);
+		padding: var(--spacing-4) 0;
 		position: sticky;
 		top: 0;
-		z-index: 1002;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		z-index: var(--z-sidebar);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 	}
 
 	.nav-content {
 		max-width: 1200px;
 		margin: 0 auto;
-		padding: 0 2rem;
+		padding: 0 var(--spacing-8);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 	}
 
-	.logo {
-		font-size: 1.5rem;
-		font-weight: 700;
-		text-decoration: none;
-		color: #667eea;
-		transition: color 0.3s ease;
-	}
-
-	.logo:hover {
-		color: #764ba2;
+	.navbar .logo {
+		font-size: var(--font-size-2xl);
+		font-weight: var(--font-weight-bold);
+		color: var(--text-primary);
 	}
 
 	.nav-links {
 		display: flex;
-		gap: 2rem;
+		gap: var(--spacing-6);
 		align-items: center;
 	}
 
 	.nav-links a {
-		text-decoration: none;
-		color: #666;
-		font-weight: 500;
-		transition: color 0.3s ease;
+		color: var(--text-secondary);
+		font-weight: var(--font-weight-medium);
+		transition: color var(--transition-base);
 		position: relative;
 	}
 
 	.nav-links a:hover {
-		color: #667eea;
+		color: var(--text-primary);
 	}
 
 	.nav-links a.active {
-		color: #667eea;
+		color: var(--text-primary);
+		font-weight: var(--font-weight-semibold);
 	}
 
 	.nav-links a.active::after {
@@ -196,22 +402,24 @@
 		left: 0;
 		right: 0;
 		height: 2px;
-		background: #667eea;
+		background: var(--text-primary);
+		border-radius: var(--radius-full);
 	}
 
 	.btn-auth-secondary {
 		background: transparent;
-		color: #667eea !important;
-		padding: 0.5rem 1.25rem;
-		border-radius: 8px;
-		border: 2px solid #667eea;
-		font-weight: 600;
-		transition: all 0.3s ease;
+		color: var(--text-primary) !important;
+		padding: var(--spacing-2) var(--spacing-5);
+		border-radius: var(--radius-md);
+		border: 2px solid var(--border-subtle);
+		font-weight: var(--font-weight-semibold);
+		transition: all var(--transition-base);
 	}
 
 	.btn-auth-secondary:hover {
-		background: #f8f9ff;
-		transform: translateY(-2px);
+		background: var(--bg-sidebar);
+		border-color: var(--border-medium);
+		transform: translateY(-1px);
 	}
 
 	.btn-auth-secondary::after {
@@ -219,164 +427,53 @@
 	}
 
 	.btn-auth {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white !important;
-		padding: 0.5rem 1.25rem;
-		border-radius: 8px;
-		font-weight: 600;
-		transition: all 0.3s ease;
+		background: var(--text-primary);
+		color: var(--bg-widget) !important;
+		padding: var(--spacing-2) var(--spacing-5);
+		border-radius: var(--radius-md);
+		font-weight: var(--font-weight-semibold);
+		transition: all var(--transition-base);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	.btn-auth:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+		background: #2A2824;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 	}
 
 	.btn-auth::after {
 		display: none;
 	}
 
-	/* Profile Menu */
-	.profile-menu {
-		position: relative;
-	}
-
-	.profile-button {
-		background: transparent;
-		border: 2px solid #667eea;
-		color: #667eea;
-		padding: 0.5rem 1rem;
-		border-radius: 8px;
-		font-weight: 600;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		transition: all 0.3s ease;
-	}
-
-	.profile-button:hover {
-		background: #667eea;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-	}
-
-	.profile-icon {
-		font-size: 1.2rem;
-	}
-
-	.profile-email {
-		max-width: 150px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.dropdown-arrow {
-		font-size: 0.7rem;
-		transition: transform 0.3s ease;
-	}
-
-	.dropdown-menu {
-		position: absolute;
-		top: calc(100% + 0.5rem);
-		right: 0;
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		min-width: 200px;
-		z-index: 1001;
-		animation: slideDown 0.2s ease;
-	}
-
-	@keyframes slideDown {
-		from {
-			opacity: 0;
-			transform: translateY(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.dropdown-menu a,
-	.dropdown-menu button {
-		display: block;
-		width: 100%;
-		padding: 0.75rem 1rem;
-		text-decoration: none;
-		color: #333;
-		border: none;
-		background: none;
-		text-align: left;
-		cursor: pointer;
-		transition: background 0.2s ease;
-		font-weight: 500;
-	}
-
-	.dropdown-menu a:hover,
-	.dropdown-menu button:hover {
-		background: #f5f7fa;
-	}
-
-	.dropdown-menu a:first-child {
-		border-radius: 8px 8px 0 0;
-	}
-
-	.admin-link {
-		color: #667eea !important;
-		font-weight: 600;
-		border-top: 1px solid #e0e0e0;
-	}
-
-	.admin-link:hover {
-		background: #f8f9ff !important;
-	}
-
-	.sign-out-btn {
-		color: #ef4444;
-		border-top: 1px solid #e0e0e0;
-		border-radius: 0 0 8px 8px;
-		font-weight: 600;
-	}
-
-	.sign-out-btn:hover {
-		background: #fee;
-	}
-
-	.overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 1000;
-		background: transparent;
-	}
-
-	main {
+	.public-main {
 		flex: 1;
 		width: 100%;
 	}
 
-	@media (max-width: 768px) {
+	/* === Responsive === */
+	@media (max-width: 968px) {
+		.sidebar {
+			transform: translateX(-100%);
+			transition: transform var(--transition-base);
+		}
+
+		.sidebar.open {
+			transform: translateX(0);
+		}
+
+		.main-content {
+			margin-left: 0;
+			padding: var(--spacing-4);
+		}
+
 		.nav-content {
-			flex-direction: column;
-			gap: 1rem;
+			padding: 0 var(--spacing-4);
 		}
 
 		.nav-links {
-			gap: 1rem;
+			gap: var(--spacing-3);
 			flex-wrap: wrap;
-			justify-content: center;
-		}
-
-		.profile-email {
-			display: none;
 		}
 	}
 </style>
-

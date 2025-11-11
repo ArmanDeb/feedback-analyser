@@ -1,0 +1,196 @@
+/* ============================================
+   Tailwind CSS
+   ============================================ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Clean & Warm Neumorphism Design System
+   ============================================ */
+
+/* === CSS Variables === */
+:root {
+	/* === Colors - Backgrounds === */
+	--bg-page: #FAF9F6; /* Off-white/beige background */
+	--bg-sidebar: #F5F4F1; /* Light beige sidebar for better readability */
+	--bg-widget: #FAF9F6; /* Off-white for cards */
+	--bg-overlay: rgba(0, 0, 0, 0.05);
+	
+	/* === Modern Dashboard Colors - Soft & Gentle === */
+	--card-green: #34D399; /* Softer green for positive metrics */
+	--card-green-light: #D1FAE5; /* Light green background */
+	--card-yellow: #FBBF24; /* Softer yellow/amber */
+	--card-yellow-light: #FEF3C7; /* Light yellow background */
+	--card-purple: #A78BFA; /* Softer purple for primary actions */
+	--card-purple-light: #F3E8FF; /* Very light purple background */
+	--card-primary: #A78BFA; /* Primary color - Soft Purple */
+	--card-primary-light: #F3E8FF; /* Very light purple background */
+
+	/* === Colors - Accents (Pastel & Desaturated) === */
+	--accent-peach: #FFE0B3; /* Yellow/Orange Peach for positive/Sales */
+	--accent-blue: #C1D9FA; /* Light Sky Blue for secondary actions/Upgrade */
+	--accent-green: #D4EDDA; /* Pale Mint Green for growth/positive indicators */
+	--accent-gray: #DCDCDC; /* Cold Gray for neutral elements */
+	
+	/* === Colors - Semantic (for status, alerts, etc.) === */
+	--color-success: #10b981; /* Green for success/positive */
+	--color-success-light: #D4EDDA; /* Light green background */
+	--color-warning: #f59e0b; /* Orange/Amber for warnings */
+	--color-warning-light: #FEF3C7; /* Light amber background */
+	--color-error: #ef4444; /* Red for errors/danger */
+	--color-error-light: #FEE2E2; /* Light red background */
+	--color-info: #3b82f6; /* Blue for info */
+	--color-info-light: #DBEAFE; /* Light blue background */
+	
+	/* === Colors - Ultra Subtle (very low intensity) === */
+	--color-success-subtle: #9FC4B0; /* Subtle green with more saturation */
+	--color-success-subtle-light: #D4E8DD; /* Very light subtle green background */
+	--color-error-subtle: #C89696; /* Subtle red with more saturation - better contrast */
+	--color-error-subtle-light: #E8D4D4; /* Very light subtle red background */
+	
+	/* === Colors - Gradients === */
+	--gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	--gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	--gradient-warning: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+	--gradient-error: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+	
+	/* === Colors - Neutral Grays === */
+	--gray-50: #f8f9fa;
+	--gray-100: #f3f4f6;
+	--gray-200: #e5e7eb;
+	--gray-300: #d1d5db;
+	--gray-400: #9ca3af;
+	--gray-500: #6b7280;
+	--gray-600: #4b5563;
+	--gray-700: #374151;
+	--gray-800: #1f2937;
+	--gray-900: #111827;
+	
+	/* === Colors - White/Black === */
+	--color-white: #ffffff;
+	--color-black: #000000;
+
+	/* === Colors - Text === */
+	--text-primary: #2C2C2C; /* Dark brown/gray for main text - better readability and contrast */
+	--text-secondary: #6B6B6B; /* Medium brown/gray for labels, descriptions - improved contrast */
+	--text-muted: #9B9A97; /* Lighter brown/gray for less important text */
+
+	/* === Colors - Borders === */
+	--border-subtle: #E8E6E0; /* Beige border color */
+	--border-medium: #D4D2CC; /* Darker beige border */
+
+	/* === Typography === */
+	--font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+
+	/* === Font Sizes === */
+	--font-size-xs: 0.75rem; /* 12px */
+	--font-size-sm: 0.875rem; /* 14px */
+	--font-size-base: 1rem; /* 16px */
+	--font-size-lg: 1.125rem; /* 18px */
+	--font-size-xl: 1.25rem; /* 20px */
+	--font-size-2xl: 1.5rem; /* 24px */
+	--font-size-3xl: 1.875rem; /* 30px */
+	--font-size-4xl: 2.25rem; /* 36px */
+
+	/* === Line Heights === */
+	--line-height-tight: 1.2;
+	--line-height-normal: 1.5;
+	--line-height-relaxed: 1.6;
+
+	/* === Spacing (8px grid) === */
+	--spacing-1: 0.25rem; /* 4px */
+	--spacing-2: 0.5rem; /* 8px */
+	--spacing-3: 0.75rem; /* 12px */
+	--spacing-4: 1rem; /* 16px */
+	--spacing-5: 1.25rem; /* 20px */
+	--spacing-6: 1.5rem; /* 24px */
+	--spacing-8: 2rem; /* 32px */
+	--spacing-10: 2.5rem; /* 40px */
+	--spacing-12: 3rem; /* 48px */
+	--spacing-16: 4rem; /* 64px */
+	--spacing-20: 5rem; /* 80px */
+
+	/* === Border Radius === */
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 20px;
+	--radius-xl: 30px;
+	--radius-full: 9999px;
+
+	/* === Shadows - Neumorphic === */
+	--shadow-soft: 0px 4px 12px rgba(0, 0, 0, 0.05), inset 0px 1px 0px rgba(255, 255, 255, 0.2);
+	--shadow-medium: 0px 6px 16px rgba(0, 0, 0, 0.08), inset 0px 1px 0px rgba(255, 255, 255, 0.25);
+	--shadow-large: 0px 8px 24px rgba(0, 0, 0, 0.1), inset 0px 1px 0px rgba(255, 255, 255, 0.3);
+	--shadow-inset: inset 0px 2px 4px rgba(0, 0, 0, 0.06), inset 0px -1px 0px rgba(255, 255, 255, 0.4);
+
+	/* === Transitions === */
+	--transition-fast: 0.15s ease;
+	--transition-base: 0.3s ease;
+	--transition-slow: 0.5s ease;
+
+	/* === Z-Index === */
+	--z-dropdown: 1000;
+	--z-overlay: 1001;
+	--z-sidebar: 1002;
+	--z-modal: 1003;
+}
+
+/* === Global Reset & Base Styles === */
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+:global(body) {
+	font-family: var(--font-family);
+	background-color: var(--bg-page);
+	color: var(--text-primary);
+	line-height: var(--line-height-relaxed);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+:global(a) {
+	color: inherit;
+	text-decoration: none;
+}
+
+:global(button) {
+	font-family: inherit;
+	cursor: pointer;
+	border: none;
+	background: none;
+}
+
+:global(input),
+:global(textarea),
+:global(select) {
+	font-family: inherit;
+}
+
+/* === Utility Classes === */
+.neumorphic-card {
+	background: var(--bg-widget);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-soft);
+	padding: var(--spacing-6);
+	transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.neumorphic-card:hover {
+	box-shadow: var(--shadow-medium);
+	transform: translateY(-1px);
+}
+
+.neumorphic-inset {
+	background: var(--bg-widget);
+	border-radius: var(--radius-md);
+	box-shadow: var(--shadow-inset);
+}
+
