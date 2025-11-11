@@ -339,20 +339,6 @@
 		to { transform: rotate(360deg); }
 	}
 
-	.results-card {
-		background: white;
-		padding: 2rem;
-		border-radius: 12px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.results-card pre {
-		background: #f8f9fa;
-		padding: 1rem;
-		border-radius: 8px;
-		overflow-x: auto;
-		font-size: 0.9rem;
-	}
 
 	.history-placeholder {
 		background: white;

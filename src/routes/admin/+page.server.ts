@@ -9,16 +9,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 	
 	// Mode développement : pas d'auth configurée
 	const devMode = !user;
-	let effectiveUser = user;
+	const effectiveUser = user || {
+		id: 'dev-user-1',
+		email: 'admin@feedback-analyser.com',
+		displayName: 'Admin Dev',
+		signedUpAt: new Date()
+	};
 	
 	if (devMode) {
 		console.warn('🔓 Mode développement - Dashboard admin accessible sans authentification');
-		effectiveUser = {
-			id: 'dev-user-1',
-			email: 'admin@feedback-analyser.com',
-			displayName: 'Admin Dev',
-			signedUpAt: new Date()
-		};
 	}
 
 	// Vérifier si l'utilisateur est admin
