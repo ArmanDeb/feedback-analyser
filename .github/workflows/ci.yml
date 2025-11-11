@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -29,12 +29,8 @@ jobs:
     - name: Run build
       run: npm run build
       env:
-        # Variables d'environnement fictives pour le build
         DATABASE_URL: "postgresql://user:pass@localhost:5432/test"
-        OPENROUTER_API_KEY: "sk-or-v1-test-key-for-ci"
-        NEXT_PUBLIC_STACK_PROJECT_ID: "test-project-id"
-        NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: "test-publishable-key"
-        STACK_SECRET_SERVER_KEY: "test-secret-key"
+        OPENROUTER_API_KEY: "sk-or-v1-test-key"
     
     - name: Run type check
       run: npm run check
@@ -43,18 +39,16 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{ matrix.node-version }}
+        name: build-artifacts
         path: build/
         retention-days: 7
 
-  # Job optionnel pour le déploiement automatique
   deploy:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-    - name: Trigger Netlify deployment
-      run: echo "✅ Le déploiement se fait automatiquement via Netlify"
-      # Netlify se déclenche automatiquement sur push vers main
+    - name: Deployment info
+      run: echo "✅ Deployment handled automatically by Netlify"
 
