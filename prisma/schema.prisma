@@ -10,18 +10,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Table des utilisateurs (synchronisée avec Stack Auth / Neon Auth)
+// Table des utilisateurs (Lucia Auth)
 model User {
-  id        String   @id @default(cuid())
-  stackId   String   @unique // ID de l'utilisateur dans Stack Auth
-  email     String   @unique
-  role      String   @default("user") // "user" ou "admin"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  hashedPassword String
+  role          String    @default("user") // "user" ou "admin"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations
+  sessions  Session[]
   analyses  Analysis[]
   apiLogs   ApiLog[]
+}
+
+// Table des sessions Lucia
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  
+  @@index([userId])
 }
 
 // Table des analyses de feedback

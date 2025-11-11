@@ -32,9 +32,7 @@
 		<p>Monitoring des coûts et statistiques d'utilisation</p>
 		<div class="user-info">
 			Connecté en tant que: <strong>{data.currentUser.email}</strong>
-			{#if !data.currentUser.isStackAuthEnabled}
-				<span class="dev-mode">Mode Développement</span>
-			{/if}
+			<span class="admin-badge">Admin</span>
 		</div>
 	</header>
 
@@ -236,9 +234,9 @@
 		gap: 1rem;
 	}
 
-	.dev-mode {
-		background: #fbbf24;
-		color: #78350f;
+	.admin-badge {
+		background: #667eea;
+		color: white;
 		padding: 0.25rem 0.75rem;
 		border-radius: 12px;
 		font-size: 0.85rem;

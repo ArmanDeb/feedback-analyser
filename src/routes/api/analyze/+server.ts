@@ -125,7 +125,8 @@ EXAMPLE (what you should return):
 
 NOW ANALYZE THE FEEDBACK AND RETURN ONLY THE JSON OBJECT:`;
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request } = event;
 	try {
 		// 1. Valider la requête
 		const body = await request.json() as AnalyzeRequest;
@@ -197,30 +198,30 @@ export const POST: RequestHandler = async ({ request }) => {
 			const makeApiCall = async () => {
 				return await withTimeout(
 					fetch('https://openrouter.ai/api/v1/chat/completions', {
-						method: 'POST',
-						headers: {
-							'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-							'Content-Type': 'application/json',
-							'HTTP-Referer': 'https://feedback-analyser.netlify.app',
-							'X-Title': 'Feedback Analyser'
-						},
-						body: JSON.stringify({
-							model: 'mistralai/mistral-7b-instruct:free',
-							messages: [
-								{
-									role: 'system',
-									content: SYSTEM_PROMPT
-								},
-								{
-									role: 'user',
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+				'Content-Type': 'application/json',
+				'HTTP-Referer': 'https://feedback-analyser.netlify.app',
+				'X-Title': 'Feedback Analyser'
+			},
+			body: JSON.stringify({
+				model: 'mistralai/mistral-7b-instruct:free',
+				messages: [
+					{
+						role: 'system',
+						content: SYSTEM_PROMPT
+					},
+					{
+						role: 'user',
 									content: `FEEDBACK TO ANALYZE:\n\n"${feedbackText}"\n\nRETURN JSON ONLY (no other text):`
-								}
-							],
+					}
+				],
 							temperature: 0.1,
 							max_tokens: 2000,
 							response_format: { type: "json_object" },
 							top_p: 0.9
-						})
+			})
 					}),
 					API_TIMEOUT_MS,
 					`L'API a pris trop de temps à répondre (timeout après ${API_TIMEOUT_MS / 1000}s)`
@@ -231,26 +232,26 @@ export const POST: RequestHandler = async ({ request }) => {
 			response = await retryWithBackoff(makeApiCall, MAX_RETRIES, RETRY_DELAY_MS);
 
 			// Vérifier le statut HTTP
-			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('❌ Erreur OpenRouter:', response.status);
-				console.error('   Response:', errorText.substring(0, 500));
-				
-				let errorData: any = {};
-				try {
-					errorData = JSON.parse(errorText);
-				} catch {
-					errorData = { message: errorText };
-				}
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error('❌ Erreur OpenRouter:', response.status);
+			console.error('   Response:', errorText.substring(0, 500));
+			
+			let errorData: any = {};
+			try {
+				errorData = JSON.parse(errorText);
+			} catch {
+				errorData = { message: errorText };
+			}
 				
 				// Déterminer si l'erreur est retry-able
 				const isRetryable = [429, 500, 502, 503, 504].includes(response.status);
-				
-				return json(
-					{
-						error: 'Erreur lors de l\'appel à l\'API IA',
-						details: errorData.error?.message || errorData.message || 'Erreur inconnue',
-						statusCode: response.status,
+			
+			return json(
+				{
+					error: 'Erreur lors de l\'appel à l\'API IA',
+					details: errorData.error?.message || errorData.message || 'Erreur inconnue',
+					statusCode: response.status,
 						hint: response.status === 401 
 							? 'Vérifiez votre clé API OpenRouter' 
 							: response.status === 429
@@ -258,15 +259,15 @@ export const POST: RequestHandler = async ({ request }) => {
 							: isRetryable
 							? 'Erreur serveur temporaire. Réessayez dans quelques instants.'
 							: 'Une erreur est survenue lors de l\'analyse.'
-					},
+				},
 					{ status: response.status >= 500 ? 503 : response.status }
-				);
-			}
+			);
+		}
 
 			// Parser la réponse
 			data = await response.json();
 			duration = Date.now() - startTime;
-			console.log(`✅ Réponse reçue en ${duration}ms`);
+		console.log(`✅ Réponse reçue en ${duration}ms`);
 			
 		} catch (error) {
 			duration = Date.now() - startTime;
@@ -402,38 +403,41 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		// 9. Sauvegarder dans la BDD + Logging des coûts (S3.4)
-		// Note: Pour le développement, on utilise un user ID fictif
-		// TODO: Remplacer par l'ID réel depuis Stack Auth quand l'auth sera activée
-		try {
-			const prisma = await import('$lib/db').then(m => m.prisma);
-			const { calculateCost } = await import('$lib/admin');
-			
-			// User ID temporaire pour le développement
-			const userId = "dev-user-1"; // TODO: Récupérer depuis Stack Auth
-			
-			// Vérifier si l'utilisateur existe, sinon le créer
-			let user = await prisma.user.findUnique({
-				where: { id: userId }
+	// Récupérer l'utilisateur authentifié depuis event.locals (Lucia Auth)
+	try {
+		const prisma = await import('$lib/db').then(m => m.prisma);
+		const { calculateCost } = await import('$lib/admin');
+		
+		// Récupérer l'utilisateur authentifié depuis event.locals
+		// Pour /essayer (mode démo sans auth), on crée un utilisateur temporaire
+		let userId = event.locals?.user?.id;
+		
+		if (!userId) {
+			// Mode démo : créer/utiliser un utilisateur anonyme
+			const anonymousEmail = 'anonymous@demo.local';
+			let anonymousUser = await prisma.user.findUnique({
+				where: { email: anonymousEmail }
 			});
-
-			if (!user) {
-				user = await prisma.user.create({
+			
+			if (!anonymousUser) {
+				// Créer l'utilisateur anonyme avec un mot de passe vide
+				anonymousUser = await prisma.user.create({
 					data: {
-						id: userId,
-						stackId: userId,
-						email: 'dev@feedback-analyser.com', // TODO: Email réel depuis Stack Auth
+						email: anonymousEmail,
+						hashedPassword: '',
 						role: 'user'
 					}
 				});
-				console.log('✅ Utilisateur de développement créé');
 			}
-			
-			// Calculer le coût réel
-			const cost = calculateCost(
-				'mistralai/mistral-7b-instruct:free',
-				result.metadata.tokensIn,
-				result.metadata.tokensOut
-			);
+			userId = anonymousUser.id;
+		}
+		
+		// Calculer le coût réel
+		const cost = calculateCost(
+			'mistralai/mistral-7b-instruct:free',
+			result.metadata.tokensIn,
+			result.metadata.tokensOut
+		);
 			
 			// Sauvegarder l'analyse
 			await prisma.analysis.create({

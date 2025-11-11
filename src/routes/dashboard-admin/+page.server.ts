@@ -4,24 +4,11 @@ import { error, redirect } from '@sveltejs/kit';
 import { isAdmin, getGlobalStats, getUserStats, getRecentApiLogs, estimateMonthlyCost } from '$lib/admin';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// Récupérer l'utilisateur depuis locals (configuré dans hooks.server.ts)
-	const user = locals.user;
+	// L'utilisateur est garanti d'exister et d'être admin grâce aux gardes dans hooks.server.ts
+	const user = locals.user!;
 	
-	// Mode développement : pas d'auth configurée
-	const devMode = !user;
-	const effectiveUser = user || {
-		id: 'dev-user-1',
-		email: 'admin@feedback-analyser.com',
-		displayName: 'Admin Dev',
-		signedUpAt: new Date()
-	};
-	
-	if (devMode) {
-		console.warn('🔓 Mode développement - Dashboard admin accessible sans authentification');
-	}
-
-	// Vérifier si l'utilisateur est admin
-	if (!isAdmin(effectiveUser)) {
+	// Vérifier que l'utilisateur est admin (double check)
+	if (!isAdmin(user)) {
 		throw error(403, {
 			message: 'Accès refusé. Vous devez être administrateur pour accéder à cette page.'
 		});
@@ -42,10 +29,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			recentLogs,
 			monthlyCostEstimate,
 			currentUser: {
-				id: effectiveUser.id,
-				email: effectiveUser.email,
-				displayName: effectiveUser.displayName,
-				isStackAuthEnabled: !devMode
+				id: user.id,
+				email: user.email,
+				role: user.role
 			}
 		};
 	} catch (err) {
@@ -70,10 +56,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 				dailyAverage: 0
 			},
 			currentUser: {
-				id: effectiveUser.id,
-				email: effectiveUser.email,
-				displayName: effectiveUser.displayName,
-				isStackAuthEnabled: !devMode
+				id: user.id,
+				email: user.email,
+				role: user.role
 			},
 			error: 'La base de données n\'est pas encore configurée. Exécutez "npx prisma db push" pour créer les tables.'
 		};

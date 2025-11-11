@@ -1,12 +1,14 @@
 // Layout load function
 // Charge les données nécessaires pour toute l'application
+import type { LayoutLoad } from './$types';
 
 export const ssr = true;
 export const prerender = false;
 
-export async function load() {
+export const load: LayoutLoad = async ({ data }) => {
+	// Passer les données du serveur (incluant user) au client
 	return {
-		// Les données globales de l'application seront ajoutées ici
+		user: data.user
 	};
-}
+};
 
