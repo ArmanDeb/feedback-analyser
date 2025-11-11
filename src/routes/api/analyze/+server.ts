@@ -3,7 +3,9 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { OPENROUTER_API_KEY } from '$env/static/private';
+
+// Récupérer la clé API de manière compatible CI/CD
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
 // Type pour la requête
 interface AnalyzeRequest {
