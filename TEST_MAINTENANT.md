@@ -220,3 +220,5 @@ Si vous voulez plus de détails :
 - `GUIDE_INSCRIPTION.md` - Guide d'utilisation détaillé
 - `NAVIGATION_FIX_COMPLETE.md` - Documentation des corrections précédentes
 
+
+

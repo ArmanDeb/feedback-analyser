@@ -220,3 +220,5 @@ Envoyez-moi une capture d'écran de :
 **Status** : 🔧 Corrections appliquées, logs de débogage ajoutés
 **Serveur** : ✅ Redémarré avec les corrections
 
+
+
