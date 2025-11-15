@@ -30,6 +30,7 @@
     "@neondatabase/serverless": "^1.0.2",
     "@node-rs/argon2": "^2.0.2",
     "@prisma/client": "^5.22.0",
+    "app-store-scraper": "^0.18.0",
     "lucia": "^3.2.2",
     "oslo": "^1.2.1"
   }

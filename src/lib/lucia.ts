@@ -4,23 +4,47 @@ import { PrismaAdapter } from '@lucia-auth/adapter-prisma';
 import { prisma } from './db';
 import { dev } from '$app/environment';
 
-// Adapter Prisma pour Lucia
-const adapter = new PrismaAdapter(prisma.session, prisma.user);
+let adapter: PrismaAdapter;
+let luciaInstance: Lucia<PrismaAdapter>;
 
-// Configuration Lucia
-export const lucia = new Lucia(adapter, {
-	sessionCookie: {
-		attributes: {
-			secure: !dev // HTTPS en production
+try {
+	// Adapter Prisma pour Lucia
+	adapter = new PrismaAdapter(prisma.session, prisma.user);
+
+	// Configuration Lucia
+	luciaInstance = new Lucia(adapter, {
+		sessionCookie: {
+			attributes: {
+				secure: !dev // HTTPS en production
+			}
+		},
+		getUserAttributes: (attributes) => {
+			return {
+				email: attributes.email,
+				role: attributes.role
+			};
 		}
-	},
-	getUserAttributes: (attributes) => {
-		return {
-			email: attributes.email,
-			role: attributes.role
-		};
-	}
-});
+	});
+} catch (error) {
+	console.error('❌ Error initializing Lucia:', error);
+	// Create a minimal Lucia instance to prevent crashes
+	adapter = new PrismaAdapter(prisma.session, prisma.user);
+	luciaInstance = new Lucia(adapter, {
+		sessionCookie: {
+			attributes: {
+				secure: !dev
+			}
+		},
+		getUserAttributes: (attributes) => {
+			return {
+				email: attributes.email || '',
+				role: attributes.role || 'user'
+			};
+		}
+	});
+}
+
+export const lucia = luciaInstance;
 
 // Types TypeScript pour Lucia
 declare module 'lucia' {

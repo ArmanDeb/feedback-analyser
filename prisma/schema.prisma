@@ -1,6 +1,3 @@
-// Schéma Prisma pour l'Analyseur de Feedback
-// Base de données: Neon (PostgreSQL Serverless)
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,65 +7,116 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Table des utilisateurs (Lucia Auth)
-model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  hashedPassword String
-  role           String   @default("user") // "user" ou "admin"
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model Analysis {
+  id           String   @id @default(cuid())
+  userId       String
+  feedbackText String   @db.Text
+  title        String?
+  result       Json
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  sessions Session[]
-  analyses Analysis[]
-  apiLogs  ApiLog[]
+  @@index([createdAt])
+  @@index([userId])
 }
 
-// Table des sessions Lucia
+model ApiLog {
+  id        String   @id @default(cuid())
+  userId    String
+  modelUsed String
+  tokensIn  Int
+  tokensOut Int
+  cost      Float
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model App {
+  id        String   @id @default(cuid())
+  userId    String
+  storeUrl  String
+  platform  String
+  appId     String
+  name      String?
+  icon      String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews   Review[]
+  clusters  IssueCluster[]
+
+  @@index([appId])
+  @@index([userId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  appId      String
+  storeId    String
+  rating     Int
+  body       String   @db.Text
+  author     String?
+  createdAt  DateTime @default(now())
+  scrapedAt  DateTime @default(now())
+  aiCategory String?
+  aiSummary  String?  @db.Text
+  aiTopic    String?
+  aiUrgency  String?
+  app        App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  
+  // Phase 3: Embedding and Clustering
+  embedding  Unsupported("vector(1536)")? // pgvector embedding (1536 dimensions for OpenAI/text-embedding-ada-002)
+  clusterId  String?
+  cluster    IssueCluster? @relation(fields: [clusterId], references: [id], onDelete: SetNull)
+
+  @@unique([appId, storeId])
+  @@index([aiCategory])
+  @@index([aiUrgency])
+  @@index([appId])
+  @@index([createdAt])
+  @@index([clusterId])
+}
+
+model IssueCluster {
+  id              String   @id @default(cuid())
+  appId           String
+  app             App      @relation(fields: [appId], references: [id], onDelete: Cascade)
+  title           String   // AI-generated canonical title (e.g., "Crash on Android 14 during checkout")
+  category        String   // 'Bug Report', 'Feature Request', 'Complaint', 'Praise'
+  status          String   @default("open") // 'open', 'seen', 'archived', 'resolved'
+  clusterEmbedding Unsupported("vector(1536)")? // Embedding of the cluster title for fast matching
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  reviews         Review[]
+
+  @@index([appId])
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+}
+
 model Session {
   id        String   @id
   userId    String
   expiresAt DateTime
-
-  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
-// Table des analyses de feedback
-model Analysis {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Contenu
-  feedbackText String  @db.Text // Le feedback brut collé par l'utilisateur
-  title        String? // Titre généré par l'IA résumant le feedback
-  result       Json // Le JSON structuré retourné par l'IA
-
-  // Métadonnées
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([createdAt])
-}
-
-// Table des logs API (pour monitoring des coûts - Épopée S3)
-model ApiLog {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Détails de l'appel
-  modelUsed String // Ex: "mistralai/mistral-7b-instruct"
-  tokensIn  Int // Tokens d'entrée (prompt)
-  tokensOut Int // Tokens de sortie (réponse)
-  cost      Float // Coût en dollars ($)
-
-  // Métadonnées
-  timestamp DateTime @default(now())
-
-  @@index([userId])
-  @@index([timestamp])
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  hashedPassword String
+  role           String     @default("user")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  sessions       Session[]
+  analyses       Analysis[]
+  apiLogs        ApiLog[]
+  apps           App[]
 }

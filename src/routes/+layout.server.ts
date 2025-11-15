@@ -2,8 +2,16 @@
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-	return {
-		user: locals.user
-	};
+	try {
+		return {
+			user: locals.user || null
+		};
+	} catch (error) {
+		console.error('❌ Error in layout server load:', error);
+		// Return null user on error to prevent 500
+		return {
+			user: null
+		};
+	}
 };
 

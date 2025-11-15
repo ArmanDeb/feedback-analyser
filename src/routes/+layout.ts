@@ -8,7 +8,7 @@ export const prerender = false;
 export const load: LayoutLoad = async ({ data }) => {
 	// Passer les données du serveur (incluant user) au client
 	return {
-		user: data.user
+		user: data?.user || null
 	};
 };
 

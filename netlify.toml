@@ -8,3 +8,7 @@
   # Ces fichiers ne sont JAMAIS exposés publiquement
   SECRETS_SCAN_OMIT_PATHS = ".netlify/server/**,.svelte-kit/output/server/**"
 
+# Note: For cron jobs, use Netlify's Scheduled Functions feature
+# Set up via Netlify UI: Site settings > Functions > Scheduled Functions
+# Or use a third-party service to call /api/ingest-reviews endpoint
+

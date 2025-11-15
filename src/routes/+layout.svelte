@@ -2,51 +2,45 @@
 	// Layout global de l'application
 	import { page } from '$app/stores';
 	import '../app.css';
+	import CommandPalette from '$lib/components/CommandPalette.svelte';
+	import MinimalHeader from '$lib/components/MinimalHeader.svelte';
 	
 	// L'utilisateur est disponible via page.data depuis hooks.server.ts
-	$: user = $page.data.user;
+	$: user = $page.data?.user || null;
 	$: isAuthenticated = !!user;
 	$: isAdmin = user?.role === 'admin';
-	
-	let isMenuOpen = false;
-	
-	function toggleMenu() {
-		isMenuOpen = !isMenuOpen;
-	}
-	
-	function closeMenu() {
-		isMenuOpen = false;
-	}
-	
-	function handleSignOut(e?: MouseEvent) {
-		e?.preventDefault();
-		e?.stopPropagation();
-		isMenuOpen = false;
-		// Créer un formulaire invisible pour gérer la déconnexion
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '/auth/logout';
-		document.body.appendChild(form);
-		form.submit();
-	}
 </script>
 
-{#if isAuthenticated}
-	<!-- Dashboard Layout avec Sidebar -->
-	<div class="dashboard-layout">
+{#if isAuthenticated && user}
+	<!-- Minimal Layout with Header (No Sidebar) -->
+	<div class="minimal-layout">
+		<!-- Minimal Header -->
+		<MinimalHeader user={user} />
+		
+		<!-- Main Content -->
+		<main class="main-content-minimal">
+			<slot />
+		</main>
+		
+		<!-- Global Command Palette -->
+		<CommandPalette />
+	</div>
+	
+	<!-- Legacy Sidebar Layout (hidden, kept for reference) -->
+	<div class="dashboard-layout" style="display: none;">
 		<!-- Sidebar Fixe -->
 		<aside class="sidebar">
 			<div class="sidebar-header">
 				<a href="/" class="logo">
-					<span class="logo-text">Feedback Analyser</span>
+					<span class="logo-text">AppReview Triage</span>
 				</a>
 			</div>
 			
 			<nav class="sidebar-nav">
 				<a 
-					href="/tableau-de-bord" 
+					href="/dashboard" 
 					class="nav-item"
-					class:active={$page.url.pathname === '/tableau-de-bord'}
+					class:active={$page.url.pathname === '/dashboard' || $page.url.pathname.startsWith('/dashboard/apps')}
 				>
 					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<defs>
@@ -58,12 +52,12 @@
 						<path d="M3 3v18h18V3H3zm16 16H5V5h14v14z" fill="url(#navDashboardGradient)"/>
 						<path d="M7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" fill="url(#navDashboardGradient)"/>
 					</svg>
-					<span class="nav-label">Tableau de Bord</span>
+					<span class="nav-label">Dashboard</span>
 				</a>
 				<a 
-					href="/nouvelle-analyse" 
+					href="/dashboard/apps/new" 
 					class="nav-item"
-					class:active={$page.url.pathname === '/nouvelle-analyse'}
+					class:active={$page.url.pathname === '/dashboard/apps/new'}
 				>
 					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<defs>
@@ -74,23 +68,7 @@
 						</defs>
 						<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="url(#navNewAnalysisGradient)"/>
 					</svg>
-					<span class="nav-label">Nouvelle Analyse</span>
-				</a>
-				<a 
-					href="/compte/utilisation" 
-					class="nav-item"
-					class:active={$page.url.pathname === '/compte/utilisation'}
-				>
-					<svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<defs>
-							<linearGradient id="navUsageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-								<stop offset="0%" style="stop-color:#2C2C2C;stop-opacity:1" />
-								<stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
-							</linearGradient>
-						</defs>
-						<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" fill="url(#navUsageGradient)"/>
-					</svg>
-					<span class="nav-label">Mon Utilisation</span>
+					<span class="nav-label">Add App</span>
 				</a>
 				{#if isAdmin}
 					<a 
@@ -118,12 +96,12 @@
 						{user?.email?.[0]?.toUpperCase() || 'U'}
 					</div>
 					<div class="user-info">
-						<div class="user-email">{user?.email || 'Utilisateur'}</div>
-						<div class="user-role">{isAdmin ? 'Administrateur' : 'Utilisateur'}</div>
+						<div class="user-email">{user?.email || 'User'}</div>
+						<div class="user-role">{isAdmin ? 'Administrator' : 'User'}</div>
 					</div>
 				</div>
 				<button class="sign-out-button" on:click={handleSignOut}>
-					<span class="sign-out-label">Déconnexion</span>
+					<span class="sign-out-label">Sign Out</span>
 				</button>
 			</div>
 		</aside>
@@ -138,12 +116,11 @@
 	<div class="public-layout">
 		<nav class="navbar">
 			<div class="nav-content">
-				<a href="/" class="logo">Feedback Analyser</a>
+				<a href="/" class="logo">AppReview Triage</a>
 				<div class="nav-links">
-					<a href="/" class:active={$page.url.pathname === '/'}>Accueil</a>
-					<a href="/essayer" class:active={$page.url.pathname === '/essayer'}>Essayer</a>
-					<a href="/auth/signup" class="btn-auth-secondary">S'inscrire</a>
-					<a href="/auth/signin" class="btn-auth">Se connecter</a>
+					<a href="/" class:active={$page.url.pathname === '/'}>Home</a>
+					<a href="/auth/signup" class="btn-auth-secondary">Get Started</a>
+					<a href="/auth/signin" class="btn-auth">Sign In</a>
 				</div>
 			</div>
 		</nav>
